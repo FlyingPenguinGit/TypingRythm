@@ -24,12 +24,6 @@ A browser-based rhythm game where you type to the beat of your favorite songs.
 3.  **Play**:
     Open your browser and navigate to `http://localhost:5000`.
 
-## Controls
-- **D**: Lane 1
-- **F**: Lane 2
-- **J**: Lane 3
-- **K**: Lane 4
-
 ## Project Structure
 - `app.py`: Main Flask application.
 - `audio_engine.py`: Handles YouTube downloading and audio analysis (librosa).
