@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typing Rhythm - Game</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        const SONG_DATA = {{ song_data | tojson }};
+    </script>
+</head>
+
+<body>
+    <div class="app-container">
+        <div id="game-screen" class="screen active">
+            <div id="game-background"></div>
+            <div id="countdown-overlay" class="hidden">3</div>
+            <div class="ui-top">
+                <div class="score-box">
+                    <div class="label">SCORE</div>
+                    <div class="value" id="score">0</div>
+                </div>
+                <div class="accuracy-box">
+                    <div class="label">ACCURACY</div>
+                    <div class="value" id="accuracy">100%</div>
+                </div>
+                <div class="combo-box">
+                    <div class="label">COMBO</div>
+                    <div class="value" id="combo">0</div>
+                </div>
+            </div>
+
+            <div class="game-area horizontal">
+                <div class="track-container">
+                    <!-- Target Zone -->
+                    <div class="target-zone">
+                        <div class="target-indicator"></div>
+                    </div>
+
+                    <!-- Notes Container -->
+                    <div id="notes-layer"></div>
+
+                    <!-- Feedback Layer -->
+                    <div id="feedback-layer"></div>
+                </div>
+            </div>
+
+            <div class="ui-bottom">
+                <div class="song-info">
+                    <div id="song-title"></div>
+                    <div class="progress-bar-container">
+                        <div id="progress-bar"></div>
+                    </div>
+                </div>
+                <a href="/" class="back-btn">BACK TO MENU</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
+</body>
+
+</html>

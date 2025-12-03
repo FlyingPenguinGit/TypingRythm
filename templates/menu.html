@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typing Rhythm - Menu</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <div id="menu-screen" class="screen active">
+            <h1 class="game-title">Typing Rhythm</h1>
+
+            <div class="input-section">
+                <div class="input-group">
+                    <input type="text" id="youtube-url" placeholder="Paste YouTube URL here...">
+                    <button id="process-btn">DOWNLOAD & PROCESS</button>
+                </div>
+                <div id="loading-status" class="hidden">Processing song...</div>
+            </div>
+
+            <div class="song-list-container">
+                <h2>YOUR SONGS</h2>
+                <div class="song-list">
+                    {% for song in songs %}
+                    <a href="/game/{{ song.id }}" class="song-card">
+                        <img src="{{ song.thumbnail }}" alt="Thumbnail">
+                        <div class="song-info">
+                            <div class="song-title">{{ song.title }}</div>
+                            <div class="song-duration">
+                                {{ "%.2f"|format(song.duration) }}s • {{ song.bpm }} BPM
+                                <span class="difficulty">
+                                    {% for i in range(song.difficulty) %}★{% endfor %}{% for i in range(5 -
+                                    song.difficulty) %}☆{% endfor %}
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('process-btn').addEventListener('click', async () => {
+            const url = document.getElementById('youtube-url').value;
+            const statusEl = document.getElementById('loading-status');
+            const btn = document.getElementById('process-btn');
+
+            if (!url) return;
+
+            statusEl.classList.remove('hidden');
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/process_song', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: url })
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Error processing song');
+            } finally {
+                statusEl.classList.add('hidden');
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+
+</html>

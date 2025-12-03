@@ -1,0 +1,7 @@
+flask
+flask-socketio
+yt-dlp
+librosa
+numpy
+eventlet
+pydub
