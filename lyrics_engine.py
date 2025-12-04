@@ -72,7 +72,6 @@ def get_lyrics(video_id):
     # Remove multiple spaces
     text = ' '.join(text.split())
     
-    print(text)
     return text
 
 def save_lyrics(video_id, text):

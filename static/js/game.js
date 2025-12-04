@@ -4,6 +4,7 @@ class Game {
     constructor() {
         this.audio = new Audio();
         this.isPlaying = false;
+        this.gameOver = false;
         this.score = 0;
         this.combo = 0;
         this.notes = [];
@@ -31,6 +32,7 @@ class Game {
         this.totalNotes = 0;
         this.hitNotes = 0;
         this.missedNotes = 0;
+        this.maxCombo = 0;
 
         // Health System
         this.maxHealth = 100;
@@ -116,7 +118,7 @@ class Game {
 
     togglePause() {
         const pauseMenu = document.getElementById('pause-menu');
-        if (!pauseMenu) return;
+        if (!pauseMenu || this.gameOver) return;
 
         if (pauseMenu.classList.contains('hidden')) {
             // Pause
@@ -295,7 +297,7 @@ class Game {
         }
 
         if (!this.isPlaying) return;
-        if (e.ctrlKey || e.altKey || e.metaKey) return;
+        if (e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
 
         const key = e.key;
         const sortedNotes = this.activeNotes.filter(n => !n.hit).sort((a, b) => a.time - b.time);
@@ -369,7 +371,7 @@ class Game {
     }
 
     mistake() {
-        this.updateHealth(-2); // Reduced penalty from -5 to -2
+        this.updateHealth(-3); // Reduced penalty from -5 to -3
         this.combo = 0;
         this.missedNotes++;
         this.showFeedback('miss');
@@ -405,6 +407,7 @@ class Game {
 
         this.score += scoreToAdd * (1 + this.combo * 0.1);
         this.combo++;
+        if (this.combo > this.maxCombo) this.maxCombo = this.combo;
         this.hitNotes++;
 
         this.showFeedback(feedback);
@@ -447,12 +450,45 @@ class Game {
 
     endGame(failed = false) {
         this.isPlaying = false;
-        if (failed) {
-            alert(`Game Over! You ran out of health.\nScore: ${Math.floor(this.score)}`);
-        } else {
-            alert(`Song Finished! Score: ${Math.floor(this.score)}`);
+        this.togglePause();
+        this.gameOver = true;
+        this.showGameOverOverlay(failed);
+    }
+
+    showGameOverOverlay(failed) {
+        const overlay = document.getElementById('game-over-overlay');
+        const title = document.getElementById('game-over-title');
+        const finalScore = document.getElementById('final-score');
+        const maxCombo = document.getElementById('max-combo');
+        const finalAccuracy = document.getElementById('final-accuracy');
+        const notesHit = document.getElementById('notes-hit');
+        const retryBtn = document.getElementById('retry-btn');
+
+        if (!overlay) return;
+
+        // Set title based on failure/success
+        if (title) {
+            title.innerText = failed ? 'GAME OVER!' : 'SONG COMPLETE!';
+            title.style.color = failed ? 'var(--primary-glow)' : 'var(--secondary-glow)';
         }
-        window.location.href = '/';
+
+        // Populate stats
+        if (finalScore) finalScore.innerText = Math.floor(this.score).toLocaleString();
+        if (maxCombo) maxCombo.innerText = `x${this.maxCombo}`;
+
+        const accuracy = (this.hitNotes + this.missedNotes) > 0
+            ? Math.floor((this.hitNotes / (this.hitNotes + this.missedNotes)) * 100)
+            : 0;
+        if (finalAccuracy) finalAccuracy.innerText = `${accuracy}%`;
+        if (notesHit) notesHit.innerText = `${this.hitNotes}/${this.hitNotes + this.missedNotes}`;
+
+        // Show overlay
+        overlay.classList.remove('hidden');
+
+        // Retry button handler
+        if (retryBtn) {
+            retryBtn.onclick = () => window.location.reload();
+        }
     }
 }
 

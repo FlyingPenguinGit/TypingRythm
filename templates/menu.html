@@ -7,6 +7,8 @@
     <title>Typing Rhythm - Menu</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 </head>
 
 <body>
@@ -41,10 +43,14 @@
                     <input type="checkbox" id="case-sensitive" style="width: auto;">
                     <label for="case-sensitive" style="margin: 0; display: inline;">Case Sensitive Mode</label>
                 </div>
+                <div style="margin-top: 0.5rem; display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="include-spaces" style="width: auto;" checked="true">
+                    <label for="include-spaces" style="margin: 0; display: inline;">Include Spaces in Beatmap</label>
+                </div>
             </div>
 
             <div class="song-list-container">
-                <h2>YOUR SONGS</h2>
+                <h2>PROCESSED SONGS</h2>
                 <div class="song-list">
                     {% for song in songs %}
                     <a href="/game/{{ song.id }}" class="song-card">
@@ -58,6 +64,17 @@
                                     {% for i in range(song.difficulty) %}★{% endfor %}{% for i in range(5 -
                                     song.difficulty) %}☆{% endfor %}
                                 </span>
+                                {% if song.include_spaces %}
+                                <span class="material-symbols-outlined song-property-icon"
+                                    title="Includes spaces">space_bar</span>
+                                {% endif %}
+                                {% if song.case_sensitive %}
+                                <span class="material-symbols-outlined song-property-icon"
+                                    title="Case sensitive">match_case</span>
+                                {% else %}
+                                <span class="material-symbols-outlined song-property-icon"
+                                    title="Case insensitive">match_case_off</span>
+                                {% endif %}
                             </div>
                         </div>
                     </a>
@@ -89,6 +106,7 @@
             const customLyrics = document.getElementById('custom-lyrics').value;
             const monotoneFactor = document.getElementById('monotone-slider').value;
             const caseSensitive = document.getElementById('case-sensitive').checked;
+            const includeSpaces = document.getElementById('include-spaces').checked;
 
             const loadingStatus = document.getElementById('loading-status');
             const processBtn = document.getElementById('process-btn');
@@ -108,7 +126,8 @@
                         url: url,
                         custom_lyrics: customLyrics,
                         monotone_factor: monotoneFactor,
-                        case_sensitive: caseSensitive
+                        case_sensitive: caseSensitive,
+                        include_spaces: includeSpaces
                     })
                 });
 

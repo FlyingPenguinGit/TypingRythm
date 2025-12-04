@@ -30,13 +30,16 @@ def menu():
     data = load_data()
     songs = []
     for video_id, info in data.items():
+        beat_map = info.get('beat_map', {})
         songs.append({
             'id': video_id,
             'title': info.get('title', 'Unknown Title'),
             'thumbnail': info.get('thumbnail', ''),
             'duration': info.get('duration', 0),
             'bpm': int(info.get('analysis', {}).get('bpm', 0)),
-            'difficulty': info.get('difficulty', 1)
+            'difficulty': info.get('difficulty', 1),
+            'case_sensitive': beat_map.get('case_sensitive', False),
+            'include_spaces': beat_map.get('include_spaces', False)
         })
     return render_template('menu.html', songs=songs)
 
@@ -59,6 +62,7 @@ def process_song():
     monotone_factor = monotone_min + (monotone_max - monotone_min) * monotone_factor_input
     
     case_sensitive = data.get('case_sensitive', False)
+    include_spaces = data.get('include_spaces', False)
     
     if not youtube_url:
         return jsonify({'error': 'No URL provided'}), 400
@@ -95,7 +99,7 @@ def process_song():
         lyrics = get_lyrics(video_id)
     
     # 4. Generate Map
-    beat_map, difficulty = generate_beat_map(analysis, lyrics, monotone_factor, case_sensitive)
+    beat_map, difficulty = generate_beat_map(analysis, lyrics, monotone_factor, case_sensitive, include_spaces)
     
     # Prepare analysis for storage (strip heavy lists)
     storage_analysis = {

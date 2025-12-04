@@ -31,6 +31,38 @@
                     <button id="resume-btn" class="pause-btn">Resume</button>
                     <a href="/" class="pause-btn">Back to Menu</a>
                 </div>
+                <div class="pause-background"></div>
+            </div>
+
+            <!-- Game Over Stats Overlay -->
+            <div id="game-over-overlay" class="game-over-overlay hidden">
+                <div class="game-over-content">
+                    <h2 id="game-over-title">GAME COMPLETE!</h2>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">FINAL SCORE</div>
+                            <div class="stat-value" id="final-score">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">MAX COMBO</div>
+                            <div class="stat-value" id="max-combo">x0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">ACCURACY</div>
+                            <div class="stat-value" id="final-accuracy">0%</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">NOTES HIT</div>
+                            <div class="stat-value" id="notes-hit">0/0</div>
+                        </div>
+                    </div>
+
+                    <div class="game-over-buttons">
+                        <button id="retry-btn" class="game-over-btn">↻ RETRY</button>
+                        <a href="/" class="game-over-btn">← BACK TO MENU</a>
+                    </div>
+                </div>
             </div>
 
             <div class="ui-top">
@@ -68,6 +100,14 @@
             </div>
 
             <div class="ui-bottom">
+                <div class="health-container">
+                    <div class="health-icon">
+                        <span>❤</span>
+                    </div>
+                    <div class="health-track">
+                        <div class="health-bar" id="health-bar"></div>
+                    </div>
+                </div>
                 <div class="song-info">
                     <div id="song-title"></div>
                     <div class="progress-bar-container">
