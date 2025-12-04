@@ -5,12 +5,9 @@ import numpy as np
 from pydub import AudioSegment
 
 # Configuration
-UPLOAD_FOLDER = 'uploads'
 STATIC_SONGS_FOLDER = 'static/songs'
 
 def ensure_dirs():
-    if not os.path.exists(UPLOAD_FOLDER):
-        os.makedirs(UPLOAD_FOLDER)
     if not os.path.exists(STATIC_SONGS_FOLDER):
         os.makedirs(STATIC_SONGS_FOLDER)
 
