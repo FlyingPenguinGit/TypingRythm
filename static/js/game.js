@@ -32,6 +32,11 @@ class Game {
         this.hitNotes = 0;
         this.missedNotes = 0;
 
+        // Health System
+        this.maxHealth = 100;
+        this.currentHealth = 100;
+        this.healthBar = document.getElementById('health-bar');
+
         this.bindEvents();
 
         if (typeof SONG_DATA !== 'undefined' && SONG_DATA) {
@@ -43,6 +48,86 @@ class Game {
 
     bindEvents() {
         document.addEventListener('keydown', (e) => this.handleInput(e));
+        this.setupVolumeControl();
+    }
+
+    // ... (Volume Control methods remain same) ...
+
+    setupVolumeControl() {
+        const volumeSlider = document.getElementById('volume-slider');
+        const volumeValue = document.getElementById('volume-value');
+        const pauseVolumeSlider = document.getElementById('pause-volume-slider');
+        const pauseVolumeValue = document.getElementById('pause-volume-value');
+
+        // Load saved volume or default to 70%
+        const savedVolume = localStorage.getItem('gameVolume') || 70;
+        this.audio.volume = savedVolume / 100;
+
+        // Set both sliders
+        if (volumeSlider) volumeSlider.value = savedVolume;
+        if (volumeValue) volumeValue.innerText = `${savedVolume}%`;
+        if (pauseVolumeSlider) pauseVolumeSlider.value = savedVolume;
+        if (pauseVolumeValue) pauseVolumeValue.innerText = `${savedVolume}%`;
+
+        // Game volume slider
+        if (volumeSlider) {
+            volumeSlider.addEventListener('input', (e) => {
+                const volume = e.target.value;
+                this.updateVolume(volume);
+            });
+        }
+
+        // Pause menu volume slider
+        if (pauseVolumeSlider) {
+            pauseVolumeSlider.addEventListener('input', (e) => {
+                const volume = e.target.value;
+                this.updateVolume(volume);
+            });
+        }
+
+        // Resume button
+        const resumeBtn = document.getElementById('resume-btn');
+        if (resumeBtn) {
+            resumeBtn.addEventListener('click', () => this.togglePause());
+        }
+
+        // Top Pause Button
+        const pauseBtnTop = document.getElementById('pause-btn-top');
+        if (pauseBtnTop) {
+            pauseBtnTop.addEventListener('click', () => this.togglePause());
+        }
+    }
+
+    updateVolume(volume) {
+        this.audio.volume = volume / 100;
+        localStorage.setItem('gameVolume', volume);
+
+        // Update all volume displays
+        const volumeValue = document.getElementById('volume-value');
+        const pauseVolumeValue = document.getElementById('pause-volume-value');
+        const volumeSlider = document.getElementById('volume-slider');
+        const pauseVolumeSlider = document.getElementById('pause-volume-slider');
+
+        if (volumeValue) volumeValue.innerText = `${volume}%`;
+        if (pauseVolumeValue) pauseVolumeValue.innerText = `${volume}%`;
+        if (volumeSlider) volumeSlider.value = volume;
+        if (pauseVolumeSlider) pauseVolumeSlider.value = volume;
+    }
+
+    togglePause() {
+        const pauseMenu = document.getElementById('pause-menu');
+        if (!pauseMenu) return;
+
+        if (pauseMenu.classList.contains('hidden')) {
+            // Pause
+            this.audio.pause();
+            pauseMenu.classList.remove('hidden');
+        } else {
+            // Resume
+            this.audio.play();
+            pauseMenu.classList.add('hidden');
+            this.loop();
+        }
     }
 
     initGame(data) {
@@ -58,14 +143,26 @@ class Game {
         this.combo = 0;
         this.hitNotes = 0;
         this.missedNotes = 0;
-        this.totalNotes = data.beat_map.length;
+        this.currentHealth = 100;
+        this.updateHealth(0);
+
+        this.totalNotes = data.beat_map.length; // Fallback if array
+        if (data.beat_map && data.beat_map.notes) this.totalNotes = data.beat_map.notes.length;
+
         this.updateUI();
 
         const videoId = window.location.pathname.split('/').pop();
         this.audio.src = `/static/songs/${videoId}.mp3`;
         this.audio.load();
 
-        this.notes = data.beat_map.map(n => ({
+        let beatMapNotes = [];
+        if (Array.isArray(data.beat_map)) {
+            beatMapNotes = data.beat_map;
+        } else if (data.beat_map && data.beat_map.notes) {
+            beatMapNotes = data.beat_map.notes;
+        }
+
+        this.notes = beatMapNotes.map(n => ({
             ...n,
             time: n.time * 1000,
             hit: false,
@@ -164,20 +261,50 @@ class Game {
     createNoteElement(note) {
         const el = document.createElement('div');
         el.className = 'note';
-        el.innerText = note.char;
+        // Display '␣' for spaces, otherwise the char
+        el.innerText = (note.char === ' ') ? '␣' : note.char;
         this.notesLayer.appendChild(el);
         note.element = el;
         this.activeNotes.push(note);
     }
 
     handleInput(e) {
+        // ESC key for pause menu
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            this.togglePause();
+            return;
+        }
+
+        // Arrow keys for volume control
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+            e.preventDefault();
+            const volumeSlider = document.getElementById('volume-slider');
+            const volumeValue = document.getElementById('volume-value');
+            if (!volumeSlider) return;
+
+            let currentVolume = parseInt(volumeSlider.value);
+            currentVolume += (e.key === 'ArrowRight' ? 5 : -5);
+            currentVolume = Math.max(0, Math.min(100, currentVolume));
+
+            volumeSlider.value = currentVolume;
+            this.audio.volume = currentVolume / 100;
+            if (volumeValue) volumeValue.innerText = `${currentVolume}%`;
+            localStorage.setItem('gameVolume', currentVolume);
+            return;
+        }
+
         if (!this.isPlaying) return;
         if (e.ctrlKey || e.altKey || e.metaKey) return;
 
-        const key = e.key.toLowerCase();
+        const key = e.key;
         const sortedNotes = this.activeNotes.filter(n => !n.hit).sort((a, b) => a.time - b.time);
 
-        if (sortedNotes.length === 0) return;
+        // False Input Check: No notes at all?
+        if (sortedNotes.length === 0) {
+            this.mistake();
+            return;
+        }
 
         const targetNote = sortedNotes[0];
         const rawSyncTime = this.audio.currentTime * 1000;
@@ -186,10 +313,23 @@ class Game {
         const diff = Math.abs(targetNote.time - syncTime);
 
         if (diff <= this.hitWindow) {
-            if (key === targetNote.key.toLowerCase()) {
+            let inputChar = key;
+            const isCaseSensitive = (typeof SONG_DATA !== 'undefined' && SONG_DATA.beat_map && SONG_DATA.beat_map.case_sensitive);
+
+            if (!isCaseSensitive) {
+                inputChar = key.toLowerCase();
+            }
+
+            if (inputChar === targetNote.key) {
                 this.hit(targetNote, diff);
                 this.updateCalibration(rawDiff);
+            } else {
+                // Wrong key pressed within window
+                this.mistake();
             }
+        } else {
+            // Pressed key but closest note is too far away
+            this.mistake();
         }
     }
 
@@ -209,6 +349,33 @@ class Game {
         }
     }
 
+    updateHealth(amount) {
+        this.currentHealth += amount;
+        if (this.currentHealth > this.maxHealth) this.currentHealth = this.maxHealth;
+        if (this.currentHealth <= 0) {
+            this.currentHealth = 0;
+            this.endGame(true); // true = failed
+        }
+
+        if (this.healthBar) {
+            this.healthBar.style.width = `${this.currentHealth}%`;
+
+            // Change color based on health
+            // We can use background-position to shift the gradient
+            // 100% health = 100% position (green)
+            // 0% health = 0% position (red)
+            this.healthBar.style.backgroundPosition = `${this.currentHealth}% 0`;
+        }
+    }
+
+    mistake() {
+        this.updateHealth(-2); // Reduced penalty from -5 to -2
+        this.combo = 0;
+        this.missedNotes++;
+        this.showFeedback('miss');
+        this.updateUI();
+    }
+
     hit(note, diff) {
         note.hit = true;
         if (note.element) {
@@ -225,12 +392,15 @@ class Game {
         if (diff < 70) {
             scoreToAdd = 300;
             feedback = 'perfect';
+            this.updateHealth(4); // Increased gain from 2 to 4
         } else if (diff < 150) {
             scoreToAdd = 100;
             feedback = 'good';
+            this.updateHealth(2); // Increased gain from 1 to 2
         } else {
             scoreToAdd = 50;
             feedback = 'ok';
+            this.updateHealth(1); // Added small gain for OK
         }
 
         this.score += scoreToAdd * (1 + this.combo * 0.1);
@@ -252,6 +422,7 @@ class Game {
         }
         this.combo = 0;
         this.missedNotes++;
+        this.updateHealth(-5); // Reduced penalty from -10 to -5
         this.showFeedback('miss');
         this.updateUI();
     }
@@ -266,7 +437,7 @@ class Game {
 
     updateUI() {
         if (this.scoreEl) this.scoreEl.innerText = Math.floor(this.score).toLocaleString();
-        if (this.comboEl) this.comboEl.innerText = this.combo;
+        if (this.comboEl) this.comboEl.innerText = `x${this.combo}`;
 
         if (this.totalNotes > 0) {
             const accuracy = Math.floor((this.hitNotes / (this.hitNotes + this.missedNotes)) * 100);
@@ -274,9 +445,13 @@ class Game {
         }
     }
 
-    endGame() {
+    endGame(failed = false) {
         this.isPlaying = false;
-        alert(`Song Finished! Score: ${Math.floor(this.score)}`);
+        if (failed) {
+            alert(`Game Over! You ran out of health.\nScore: ${Math.floor(this.score)}`);
+        } else {
+            alert(`Song Finished! Score: ${Math.floor(this.score)}`);
+        }
         window.location.href = '/';
     }
 }

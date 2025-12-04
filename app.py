@@ -52,6 +52,13 @@ def game(video_id):
 def process_song():
     data = request.json
     youtube_url = data.get('url')
+    custom_lyrics = data.get('custom_lyrics')
+    monotone_factor_input = float(data.get('monotone_factor', 0.5))
+    monotone_min = 0.1
+    monotone_max = 0.8
+    monotone_factor = monotone_min + (monotone_max - monotone_min) * monotone_factor_input
+    
+    case_sensitive = data.get('case_sensitive', False)
     
     if not youtube_url:
         return jsonify({'error': 'No URL provided'}), 400
@@ -82,15 +89,20 @@ def process_song():
             return jsonify({'error': 'Analysis failed'}), 500
         
     # 3. Get Lyrics
-    lyrics = get_lyrics(video_id)
+    if custom_lyrics and custom_lyrics.strip():
+        lyrics = custom_lyrics.strip()
+    else:
+        lyrics = get_lyrics(video_id)
     
     # 4. Generate Map
-    beat_map, difficulty = generate_beat_map(analysis, lyrics)
+    beat_map, difficulty = generate_beat_map(analysis, lyrics, monotone_factor, case_sensitive)
     
     # Prepare analysis for storage (strip heavy lists)
     storage_analysis = {
         'bpm': analysis['bpm'],
-        'duration': analysis['duration']
+        'duration': analysis['duration'],
+        'beat_times': analysis['beat_times'], # Keep for re-generation
+        'onset_times': analysis['onset_times'] # Keep for re-generation
     }
     
     # Save Data
@@ -117,6 +129,6 @@ def favicon():
 
 if __name__ == '__main__':
     import os
-    port = int(os.environ.get('PORT', 5000))
-    debug = os.environ.get('FLASK_ENV') != 'production'
+    port = int(os.environ.get('PORT', 8000))
+    debug = not os.environ.get('RENDER')
     socketio.run(app, host='0.0.0.0', port=port, debug=debug)

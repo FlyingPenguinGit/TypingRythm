@@ -19,7 +19,28 @@
                     <input type="text" id="youtube-url" placeholder="Paste YouTube URL here...">
                     <button id="process-btn">DOWNLOAD & PROCESS</button>
                 </div>
+
+                <div class="advanced-toggle">
+                    <button id="advanced-btn" type="button">⚙️ Advanced Options</button>
+                </div>
+
                 <div id="loading-status" class="hidden">Processing song...</div>
+            </div>
+
+            <div id="advanced-section" class="advanced-section hidden">
+                <label for="monotone-slider">Beatmap Monotony (0 = Chaotic, 1 = Strict): <span
+                        id="monotone-value">0.5</span></label>
+                <input type="range" id="monotone-slider" min="0" max="1" step="0.01" value="0.5"
+                    style="width: 100%; padding: 0 0">
+
+                <label for="custom-lyrics">Custom Lyrics (optional):</label>
+                <textarea id="custom-lyrics"
+                    placeholder="Paste your custom lyrics here...&#10;Leave empty to use automatic"></textarea>
+
+                <div style="margin-top: 1rem; display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="case-sensitive" style="width: auto;">
+                    <label for="case-sensitive" style="margin: 0; display: inline;">Case Sensitive Mode</label>
+                </div>
             </div>
 
             <div class="song-list-container">
@@ -31,7 +52,8 @@
                         <div class="song-info">
                             <div class="song-title">{{ song.title }}</div>
                             <div class="song-duration">
-                                {{ "%.2f"|format(song.duration) }}s • {{ song.bpm }} BPM
+                                <span class="duration-display" data-duration="{{ song.duration }}"></span> • {{ song.bpm
+                                }} BPM
                                 <span class="difficulty">
                                     {% for i in range(song.difficulty) %}★{% endfor %}{% for i in range(5 -
                                     song.difficulty) %}☆{% endfor %}
@@ -46,21 +68,48 @@
     </div>
 
     <script>
+        // Advanced Toggle
+        const advancedBtn = document.getElementById('advanced-btn');
+        const advancedSection = document.getElementById('advanced-section');
+
+        advancedBtn.addEventListener('click', () => {
+            advancedSection.classList.toggle('hidden');
+        });
+
+        // Monotone Slider
+        const monotoneSlider = document.getElementById('monotone-slider');
+        const monotoneValue = document.getElementById('monotone-value');
+
+        monotoneSlider.addEventListener('input', (e) => {
+            monotoneValue.innerText = e.target.value;
+        });
+
         document.getElementById('process-btn').addEventListener('click', async () => {
             const url = document.getElementById('youtube-url').value;
-            const statusEl = document.getElementById('loading-status');
-            const btn = document.getElementById('process-btn');
+            const customLyrics = document.getElementById('custom-lyrics').value;
+            const monotoneFactor = document.getElementById('monotone-slider').value;
+            const caseSensitive = document.getElementById('case-sensitive').checked;
+
+            const loadingStatus = document.getElementById('loading-status');
+            const processBtn = document.getElementById('process-btn');
 
             if (!url) return;
 
-            statusEl.classList.remove('hidden');
-            btn.disabled = true;
+            loadingStatus.classList.remove('hidden');
+            processBtn.disabled = true;
 
             try {
                 const response = await fetch('/process_song', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: url })
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        url: url,
+                        custom_lyrics: customLyrics,
+                        monotone_factor: monotoneFactor,
+                        case_sensitive: caseSensitive
+                    })
                 });
 
                 const data = await response.json();
@@ -74,8 +123,18 @@
                 console.error(e);
                 alert('Error processing song');
             } finally {
-                statusEl.classList.add('hidden');
-                btn.disabled = false;
+                loadingStatus.classList.add('hidden');
+                processBtn.disabled = false;
+            }
+        });
+
+        // Format Durations
+        document.querySelectorAll('.duration-display').forEach(el => {
+            const duration = parseFloat(el.dataset.duration);
+            if (!isNaN(duration)) {
+                const m = Math.floor(duration / 60);
+                const s = Math.floor(duration % 60);
+                el.innerText = `${m}m ${s}s`;
             }
         });
     </script>

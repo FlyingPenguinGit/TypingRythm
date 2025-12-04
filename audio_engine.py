@@ -50,6 +50,12 @@ def download_audio(youtube_url):
         'no_warnings': True,
     }
 
+    # Check for cookies.txt to avoid bot detection (Render.com fix)
+    cookies_path = 'cookies.txt'
+    if os.path.exists(cookies_path):
+        ydl_opts['cookiefile'] = cookies_path
+        print(f"Using cookies from {cookies_path}")
+
     title = "Unknown Title"
 
     try:

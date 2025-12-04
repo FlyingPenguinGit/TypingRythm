@@ -18,19 +18,38 @@
         <div id="game-screen" class="screen active">
             <div id="game-background"></div>
             <div id="countdown-overlay" class="hidden">3</div>
-            <div class="ui-top">
-                <div class="score-box">
-                    <div class="label">SCORE</div>
-                    <div class="value" id="score">0</div>
+
+            <!-- Pause Menu -->
+            <div id="pause-menu" class="pause-menu hidden">
+                <div class="pause-content">
+                    <h2>PAUSED</h2>
+                    <div class="pause-volume-control">
+                        <label for="pause-volume-slider">🔊 Volume</label>
+                        <input type="range" id="pause-volume-slider" min="0" max="100" value="70">
+                        <span id="pause-volume-value">70%</span>
+                    </div>
+                    <button id="resume-btn" class="pause-btn">Resume</button>
+                    <a href="/" class="pause-btn">Back to Menu</a>
                 </div>
+            </div>
+
+            <div class="ui-top">
+                <div class="score-container">
+                    <div class="score-box">
+                        <div class="label">SCORE</div>
+                        <div class="value" id="score">0</div>
+                    </div>
+                    <div class="combo-circle">
+                        <span id="combo">x0</span>
+                    </div>
+                </div>
+
                 <div class="accuracy-box">
                     <div class="label">ACCURACY</div>
                     <div class="value" id="accuracy">100%</div>
                 </div>
-                <div class="combo-box">
-                    <div class="label">COMBO</div>
-                    <div class="value" id="combo">0</div>
-                </div>
+
+                <button id="pause-btn-top" class="pause-icon-btn">⏸</button>
             </div>
 
             <div class="game-area horizontal">
@@ -55,7 +74,6 @@
                         <div id="progress-bar"></div>
                     </div>
                 </div>
-                <a href="/" class="back-btn">BACK TO MENU</a>
             </div>
         </div>
     </div>
