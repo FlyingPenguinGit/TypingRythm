@@ -1607,3 +1607,64 @@ button:hover {
     background: var(--secondary-glow);
     box-shadow: 0 0 25px var(--secondary-glow);
 }
+
+/* Grade Badge Styles */
+.grade-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 8px;
+    text-align: center;
+    z-index: 5;
+    background: #000000b5;
+    border-bottom-left-radius: 20px;
+    box-shadow: #000000c2 2px 2px 15px 7px;
+}
+
+.grade-container {
+    transform: rotate(8deg);
+}
+
+.grade-letter {
+    font-size: 2.5rem;
+    font-weight: 900;
+    line-height: 0.8;
+    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5);
+}
+
+.high-score {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: white;
+    text-shadow: 1px 1px 2px black;
+}
+
+.grade-s .grade-letter {
+    color: #ffd700;
+    text-shadow: 0 0 10px #ffd700;
+}
+
+.grade-a .grade-letter {
+    color: #00ff00;
+    text-shadow: 0 0 10px #00ff00;
+}
+
+.grade-b .grade-letter {
+    color: #00ccff;
+    text-shadow: 0 0 10px #00ccff;
+}
+
+.grade-c .grade-letter {
+    color: #ffff00;
+    text-shadow: 0 0 10px #ffff00;
+}
+
+.grade-d .grade-letter {
+    color: #ff8800;
+    text-shadow: 0 0 10px #ff8800;
+}
+
+.grade-f .grade-letter {
+    color: #ff0000;
+    text-shadow: 0 0 10px #ff0000;
+}

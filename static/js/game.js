@@ -452,10 +452,68 @@ class Game {
         this.isPlaying = false;
         this.togglePause();
         this.gameOver = true;
-        this.showGameOverOverlay(failed);
+
+        const grade = this.calculateGrade();
+
+        if (!failed) {
+            this.saveScore(this.score, grade);
+        }
+
+        this.showGameOverOverlay(failed, grade);
     }
 
-    showGameOverOverlay(failed) {
+    calculateMaxScore() {
+        // Max score calculation assuming all perfect hits (300 base) and maintaining combo
+        // Score += 300 * (1 + combo * 0.1)
+        // Combo goes 0, 1, 2, ..., N-1
+        const N = this.totalNotes;
+        if (N === 0) return 0;
+
+        // Sum of (1 + i*0.1) for i=0 to N-1 is N + 0.1 * (N*(N-1)/2)
+        const multiplierSum = N + 0.1 * (N * (N - 1) / 2);
+        return 300 * multiplierSum;
+    }
+
+    calculateGrade() {
+        const accuracy = (this.hitNotes + this.missedNotes) > 0
+            ? (this.hitNotes / (this.hitNotes + this.missedNotes))
+            : 0;
+
+        if (accuracy >= 0.95) return 'S';
+        if (accuracy >= 0.90) return 'A';
+        if (accuracy >= 0.80) return 'B';
+        if (accuracy >= 0.70) return 'C';
+        if (accuracy >= 0.60) return 'D';
+        return 'F';
+    }
+
+    saveScore(score, grade) {
+        const videoId = window.location.pathname.split('/').pop();
+        const storageKey = 'typing_rhythm_scores';
+
+        let scores = {};
+        try {
+            const stored = localStorage.getItem(storageKey);
+            if (stored) {
+                scores = JSON.parse(stored);
+            }
+        } catch (e) {
+            console.error("Failed to parse scores:", e);
+        }
+
+        const currentBest = scores[videoId] ? scores[videoId].score : 0;
+        const currentGrade = scores[videoId] ? scores[videoId].grade : 'F';
+
+        if (score > currentBest || grade < currentGrade) {
+            scores[videoId] = {
+                score: Math.max(Math.floor(score), currentBest),
+                grade: Math.min(grade, currentGrade)
+            };
+            localStorage.setItem(storageKey, JSON.stringify(scores));
+        }
+    }
+
+    showGameOverOverlay(failed, grade = 'F') {
         const overlay = document.getElementById('game-over-overlay');
         const title = document.getElementById('game-over-title');
         const finalScore = document.getElementById('final-score');
@@ -468,7 +526,7 @@ class Game {
 
         // Set title based on failure/success
         if (title) {
-            title.innerText = failed ? 'GAME OVER!' : 'SONG COMPLETE!';
+            title.innerText = failed ? 'GAME OVER!' : `SONG COMPLETE! - GRADE ${grade}`;
             title.style.color = failed ? 'var(--primary-glow)' : 'var(--secondary-glow)';
         }
 

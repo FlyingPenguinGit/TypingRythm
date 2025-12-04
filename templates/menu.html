@@ -54,7 +54,9 @@
                 <div class="song-list">
                     {% for song in songs %}
                     <a href="/game/{{ song.id }}" class="song-card">
-                        <img src="{{ song.thumbnail }}" alt="Thumbnail">
+                        <div style="position: relative;">
+                            <img src="{{ song.thumbnail }}" alt="Thumbnail">
+                        </div>
                         <div class="song-info">
                             <div class="song-title">{{ song.title }}</div>
                             <div class="song-duration">
@@ -155,6 +157,43 @@
                 const s = Math.floor(duration % 60);
                 el.innerText = `${m}m ${s}s`;
             }
+        });
+
+        // Load Scores from LocalStorage
+        document.addEventListener('DOMContentLoaded', () => {
+            const storageKey = 'typing_rhythm_scores';
+            let scores = {};
+            try {
+                const stored = localStorage.getItem(storageKey);
+                if (stored) {
+                    scores = JSON.parse(stored);
+                }
+            } catch (e) {
+                console.error("Failed to parse scores:", e);
+            }
+
+            const songCards = document.querySelectorAll('.song-card');
+            songCards.forEach(card => {
+                const href = card.getAttribute('href');
+                const videoId = href.split('/').pop();
+
+                if (scores[videoId]) {
+                    const scoreData = scores[videoId];
+                    const imgContainer = card.querySelector('div[style="position: relative;"]');
+
+                    if (imgContainer) {
+                        const badge = document.createElement('div');
+                        badge.className = `grade-badge grade-${scoreData.grade.toLowerCase()}`;
+                        badge.innerHTML = `
+                            <div class="grade-container">
+                                <div class="grade-letter">${scoreData.grade}</div>
+                                <div class="high-score">${scoreData.score}</div>
+                            </div>
+                        `;
+                        imgContainer.appendChild(badge);
+                    }
+                }
+            });
         });
     </script>
 </body>
