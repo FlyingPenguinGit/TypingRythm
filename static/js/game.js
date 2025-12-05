@@ -1,5 +1,3 @@
-// Socket.io removed as it was unused and causing issues
-
 class Game {
     constructor() {
         this.audio = new Audio();
@@ -11,6 +9,11 @@ class Game {
         this.activeNotes = [];
         this.startTime = 0;
 
+        // Apply settings
+        const scheme = localStorage.getItem('colorScheme') || 'default';
+        const font = localStorage.getItem('fontStyle') || 'outfit';
+        document.body.className = `theme-${scheme} font-${font}`;
+
         // Horizontal settings
         this.travelTime = 3000;
         this.hitWindow = 200; // Increased from 150ms for more forgiveness
@@ -18,7 +21,7 @@ class Game {
 
         // Auto-calibration
         this.offsetHistory = [];
-        this.calibrationOffset = 0;
+        this.calibrationOffset = parseFloat(this.getCookie('calibrationOffset')) || 0;
         this.maxHistory = 10;
 
         this.notesLayer = document.getElementById('notes-layer');
@@ -297,7 +300,10 @@ class Game {
         }
 
         if (!this.isPlaying) return;
-        if (e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
+        if (e.ctrlKey || e.altKey || e.metaKey || e.key === 'Shift') {
+            console.log(e.key);
+            return;
+        }
 
         const key = e.key;
         const sortedNotes = this.activeNotes.filter(n => !n.hit).sort((a, b) => a.time - b.time);
@@ -349,6 +355,27 @@ class Game {
         } else {
             this.calibrationOffset = avg;
         }
+    }
+
+    setCookie(name, value, days) {
+        let expires = "";
+        if (days) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            expires = "; expires=" + date.toUTCString();
+        }
+        document.cookie = name + "=" + (value || "") + expires + "; path=/";
+    }
+
+    getCookie(name) {
+        const nameEQ = name + "=";
+        const ca = document.cookie.split(';');
+        for (let i = 0; i < ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+        }
+        return null;
     }
 
     updateHealth(amount) {
@@ -460,6 +487,8 @@ class Game {
         }
 
         this.showGameOverOverlay(failed, grade);
+
+        this.setCookie('calibrationOffset', this.calibrationOffset, 365);
     }
 
     calculateMaxScore() {

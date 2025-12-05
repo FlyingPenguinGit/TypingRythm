@@ -6,19 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Typing Rhythm - Menu</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Roboto+Mono:wght@400;700&family=Press+Start+2P&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 </head>
 
 <body>
     <div class="app-container">
+        <h1 class="game-title">Typing Rhythm</h1>
         <div id="menu-screen" class="screen active">
-            <h1 class="game-title">Typing Rhythm</h1>
 
             <div class="input-section">
                 <div class="input-group">
-                    <input type="text" id="youtube-url" placeholder="Paste YouTube URL here...">
+                    <input type="text" id="youtube-url" placeholder="Paste YouTube URL here..." style="width: 55%;">
                     <button id="process-btn">DOWNLOAD & PROCESS</button>
                 </div>
 
@@ -29,8 +31,8 @@
                 <div id="loading-status" class="hidden">Processing song...</div>
             </div>
 
-            <div id="advanced-section" class="advanced-section hidden">
-                <label for="monotone-slider">Beatmap Monotony (0 = Chaotic, 1 = Strict): <span
+            <div id="advanced-section" class="advanced-section removed">
+                <label for="monotone-slider">Beatmap Monotony<br>(0 = Chaotic, 1 = Strict): <span
                         id="monotone-value">0.5</span></label>
                 <input type="range" id="monotone-slider" min="0" max="1" step="0.01" value="0.5"
                     style="width: 100%; padding: 0 0">
@@ -49,7 +51,7 @@
                 </div>
             </div>
 
-            <div class="song-list-container">
+            <div id="song-list-container" class="song-list-container">
                 <h2>PROCESSED SONGS</h2>
                 <div class="song-list">
                     {% for song in songs %}
@@ -83,6 +85,40 @@
                     {% endfor %}
                 </div>
             </div>
+
+
+            <div id="settings-screen" class="settings-screen removed">
+                <label for="keyboard-layout">Keyboard Layout:</label>
+                <select id="keyboard-layout">
+                    <option value="QWERTY">QWERTY</option>
+                    <option value="QWERTZ">QWERTZ</option>
+                    <option value="AZERTY">AZERTY</option>
+                </select>
+
+                <label for="color-scheme" style="margin-top: 1rem;">Color Scheme:</label>
+                <select id="color-scheme">
+                    <option value="default">Neon (Default)</option>
+                    <option value="sunset">Sunset</option>
+                    <option value="ocean">Ocean</option>
+                    <option value="matrix">Matrix</option>
+                </select>
+
+                <label for="font-style" style="margin-top: 1rem;">Font Style:</label>
+                <select id="font-style">
+                    <option value="outfit">Modern (Default)</option>
+                    <option value="roboto">Monospace</option>
+                    <option value="pixel">Pixel</option>
+                    <option value="comic">Comic</option>
+                </select>
+
+            </div>
+
+        </div>
+
+        <div id="settings-button" class="settings-button">
+            <button id="settings-btn" type="button">
+                <span class="material-symbols-outlined">settings</span>
+            </button>
         </div>
     </div>
 
@@ -92,7 +128,18 @@
         const advancedSection = document.getElementById('advanced-section');
 
         advancedBtn.addEventListener('click', () => {
-            advancedSection.classList.toggle('hidden');
+            advancedSection.classList.toggle('removed');
+        });
+
+
+        // Settings Toggle
+        const settingsBtn = document.getElementById('settings-btn');
+        const settingsSection = document.getElementById('settings-screen');
+        const songlistSection = document.getElementById('song-list-container');
+
+        settingsBtn.addEventListener('click', () => {
+            settingsSection.classList.toggle('removed');
+            songlistSection.classList.toggle('removed');
         });
 
         // Monotone Slider
@@ -102,6 +149,46 @@
         monotoneSlider.addEventListener('input', (e) => {
             monotoneValue.innerText = e.target.value;
         });
+
+        // Keyboard Layout
+        const keyboardLayoutSelect = document.getElementById('keyboard-layout');
+        const savedLayout = localStorage.getItem('keyboardLayout') || 'QWERTY';
+        keyboardLayoutSelect.value = savedLayout;
+
+        keyboardLayoutSelect.addEventListener('change', (e) => {
+            localStorage.setItem('keyboardLayout', e.target.value);
+        });
+
+        // Color Scheme
+        const colorSchemeSelect = document.getElementById('color-scheme');
+        const savedColorScheme = localStorage.getItem('colorScheme') || 'default';
+        colorSchemeSelect.value = savedColorScheme;
+
+        colorSchemeSelect.addEventListener('change', (e) => {
+            const scheme = e.target.value;
+            localStorage.setItem('colorScheme', scheme);
+            updateBodyClasses();
+        });
+
+        // Font Style
+        const fontStyleSelect = document.getElementById('font-style');
+        const savedFontStyle = localStorage.getItem('fontStyle') || 'outfit';
+        fontStyleSelect.value = savedFontStyle;
+
+        fontStyleSelect.addEventListener('change', (e) => {
+            const font = e.target.value;
+            localStorage.setItem('fontStyle', font);
+            updateBodyClasses();
+        });
+
+        function updateBodyClasses() {
+            const scheme = localStorage.getItem('colorScheme') || 'default';
+            const font = localStorage.getItem('fontStyle') || 'outfit';
+            document.body.className = `theme-${scheme} font-${font}`;
+        }
+
+        // Initial apply
+        updateBodyClasses();
 
         document.getElementById('process-btn').addEventListener('click', async () => {
             const url = document.getElementById('youtube-url').value;
