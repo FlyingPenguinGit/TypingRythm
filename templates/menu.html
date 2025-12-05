@@ -268,7 +268,7 @@
                     const scoreData = scores[videoId];
                     const imgContainer = card.querySelector('div[style="position: relative;"]');
 
-                    if (imgContainer) {
+                    if (imgContainer && scoreData.grade) {
                         const badge = document.createElement('div');
                         badge.className = `grade-badge grade-${scoreData.grade.toLowerCase()}`;
                         badge.innerHTML = `

@@ -530,13 +530,19 @@ class Game {
             console.error("Failed to parse scores:", e);
         }
 
-        const currentBest = scores[videoId] ? scores[videoId].score : 0;
-        const currentGrade = scores[videoId] ? scores[videoId].grade : 'F';
+        const entry = scores[videoId] || {};
+        const currentBest = Number.isFinite(entry.score) ? entry.score : 0;
+        const currentGrade = entry.grade || 'F';
 
-        if (score > currentBest || grade < currentGrade) {
+        const gradeOrder = ['F', 'D', 'C', 'B', 'A', 'S'];
+        const newGradeIndex = gradeOrder.indexOf(grade);
+        const currentGradeIndex = gradeOrder.indexOf(currentGrade);
+
+        // Update if score is higher OR grade is better
+        if (score > currentBest || newGradeIndex > currentGradeIndex) {
             scores[videoId] = {
                 score: Math.max(Math.floor(score), currentBest),
-                grade: Math.min(grade, currentGrade)
+                grade: newGradeIndex > currentGradeIndex ? grade : currentGrade
             };
             localStorage.setItem(storageKey, JSON.stringify(scores));
         }
@@ -555,8 +561,13 @@ class Game {
 
         // Set title based on failure/success
         if (title) {
-            title.innerText = failed ? 'GAME OVER!' : `SONG COMPLETE! - GRADE ${grade}`;
-            title.style.color = failed ? 'var(--primary-glow)' : 'var(--secondary-glow)';
+            if (failed) {
+                title.innerText = 'GAME OVER!';
+                title.style.color = 'var(--primary-glow)';
+            } else {
+                title.innerHTML = `SONG COMPLETE! - GRADE <span class="grade-${grade.toLowerCase()}" style="display:inline-block"><span class="grade-letter" style="font-size:inherit">${grade}</span></span>`;
+                title.style.color = 'var(--secondary-glow)';
+            }
         }
 
         // Populate stats
