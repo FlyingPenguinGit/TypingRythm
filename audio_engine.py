@@ -1,3 +1,5 @@
+print("Importing audio_engine...")
+
 import os
 import yt_dlp
 import librosa
