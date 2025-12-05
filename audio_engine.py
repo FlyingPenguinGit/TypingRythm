@@ -48,7 +48,9 @@ def download_audio(youtube_url):
     }
 
     # Check for cookies.txt to avoid bot detection (Render.com fix)
-    cookies_path = 'cookies.txt'
+    cookies_path = os.path.join(os.path.dirname(__file__), "cookies.txt")
+    print("Exists:", os.path.exists(cookies_path))
+
     if os.path.exists(cookies_path):
         ydl_opts['cookiefile'] = cookies_path
         print(f"Using cookies from {cookies_path}")
