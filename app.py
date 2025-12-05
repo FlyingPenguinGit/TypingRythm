@@ -6,6 +6,8 @@ from audio_engine import download_audio, analyze_audio
 from game_engine import generate_beat_map
 from lyrics_engine import get_lyrics, save_lyrics
 
+print("App is starting...")
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -134,7 +136,14 @@ def favicon():
     return '', 204
 
 if __name__ == '__main__':
-    import os
-    port = int(os.environ.get('PORT', 8000))
-    debug = not os.environ.get('RENDER')
-    socketio.run(app, host='0.0.0.0', port=port, debug=debug)
+    try:
+        print("Starting server...")
+        import os
+        port = int(os.environ.get('PORT', 8000))
+        debug = not os.environ.get('RENDER')
+        print("About to run socketio...")
+        socketio.run(app, host='0.0.0.0', port=port, debug=debug)
+    except Exception as e:
+        print("CRASHED:", e)
+        raise
+
