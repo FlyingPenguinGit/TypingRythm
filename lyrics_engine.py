@@ -1,5 +1,3 @@
-print("Importing lyrics_engine...")
-
 import os
 import re
 import random

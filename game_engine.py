@@ -1,5 +1,3 @@
-print("Importing game_engine...")
-
 import random
 import numpy as np
 
