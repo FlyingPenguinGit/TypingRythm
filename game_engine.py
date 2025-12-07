@@ -113,6 +113,9 @@ def generate_beat_map(analysis_data, lyrics_text=None, monotone_factor=0.5, case
     elif nps < 3.0: difficulty = 3
     elif nps < 4.5: difficulty = 4
     else: difficulty = 5
+
+    if case_sensitive:
+        difficulty = max(difficulty + 1, 5)
         
     return {
         'notes': notes,
