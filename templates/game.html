@@ -9,6 +9,8 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Roboto+Mono:wght@400;700&family=Press+Start+2P&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script>
         /* jshint ignore:start */
@@ -29,12 +31,17 @@
                 <div class="pause-content">
                     <h2>PAUSED</h2>
                     <div class="pause-volume-control">
-                        <label for="pause-volume-slider">🔊 Volume</label>
+                        <label for="pause-volume-slider"><span class="material-symbols-outlined">volume_up</span> Volume</label>
                         <input type="range" id="pause-volume-slider" min="0" max="100" value="70">
                         <span id="pause-volume-value">70%</span>
                     </div>
                     <button id="resume-btn" class="pause-btn">Resume</button>
-                    <a href="/" class="pause-btn">Back to Menu</a>
+                    <button id="pause-retry-btn" class="pause-btn retry-btn">
+                        <span class="material-symbols-outlined">replay</span> RETRY
+                    </button>
+                    <a href="/" class="pause-btn">
+                        <span class="material-symbols-outlined">arrow_back</span> Back to Menu
+                    </a>
                 </div>
                 <div class="pause-background"></div>
             </div>
@@ -43,6 +50,7 @@
             <div id="game-over-overlay" class="game-over-overlay hidden">
                 <div class="game-over-content">
                     <h2 id="game-over-title">GAME COMPLETE!</h2>
+                    <h3 id="game-over-song-title"></h3>
 
                     <div class="stats-grid">
                         <div class="stat-card">
@@ -64,8 +72,12 @@
                     </div>
 
                     <div class="game-over-buttons">
-                        <button id="retry-btn" class="game-over-btn">↻ RETRY</button>
-                        <a href="/" class="game-over-btn">← BACK TO MENU</a>
+                        <button id="retry-btn" class="game-over-btn retry-btn">
+                            <span class="material-symbols-outlined">replay</span> RETRY
+                        </button>
+                        <a href="/" class="game-over-btn">
+                            <span class="material-symbols-outlined">arrow_back</span> BACK TO MENU
+                        </a>
                     </div>
                 </div>
             </div>
@@ -86,7 +98,7 @@
                     <div class="value" id="accuracy">100%</div>
                 </div>
 
-                <button id="pause-btn-top" class="pause-icon-btn">⏸</button>
+                <button id="pause-btn-top" class="pause-icon-btn"><span class="material-symbols-outlined">pause</span></button>
             </div>
 
             <div class="game-area horizontal">
@@ -114,10 +126,11 @@
                     </div>
                 </div>
                 <div class="song-info">
-                    <div id="song-title"></div>
+                    <div id="audio-visualizer"></div>
                     <div class="progress-bar-container">
                         <div id="progress-bar"></div>
                     </div>
+                    <div id="song-title"></div>
                 </div>
             </div>
         </div>

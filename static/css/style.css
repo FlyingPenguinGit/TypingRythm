@@ -5,6 +5,7 @@
     --lane-border: rgba(255, 255, 255, 0.1);
     --primary-glow: #ff0055;
     --secondary-glow: #00e5ff;
+    --tertiary-glow: #ffffff;
     --text-color: #fff;
     --note-color: #fff;
     --hit-line-color: rgba(255, 255, 255, 0.3);
@@ -112,7 +113,6 @@ body {
     align-content: center;
     justify-content: center;
     align-items: center;
-    margin: 3rem;
     text-align: center;
 }
 
@@ -909,6 +909,18 @@ button:hover {
 }
 
 
+#resume-btn {
+    border: 2px solid var(--tertiary-glow);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+#resume-btn:hover {
+    background: var(--tertiary-glow);
+    box-shadow: 0 0 20px var(--tertiary-glow);
+    transform: translateY(-2px);
+}
+
+
 .settings-button {
     position: absolute;
     align-self: end;
@@ -924,9 +936,9 @@ button:hover {
     transform: translateY(-2px);
 }
 
-.settings-screen select {
+.settings-screen select, .settings-screen input {
     padding: 1rem 2rem;
-    margin: 1rem;
+    margin: 0.7rem;
     background: rgb(0 0 0 / 78%);
     color: white;
     border: none;
@@ -1102,29 +1114,6 @@ button:hover {
     font-weight: bold;
 }
 
-.pause-btn {
-    display: block;
-    width: 100%;
-    padding: 1rem 2rem;
-    margin: 0.5rem 0;
-    border-radius: 8px;
-    border: 2px solid var(--primary-glow);
-    background: rgba(255, 0, 85, 0.1);
-    color: white;
-    font-weight: bold;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-decoration: none;
-    text-align: center;
-}
-
-.pause-btn:hover {
-    background: var(--primary-glow);
-    box-shadow: 0 0 20px var(--primary-glow);
-    transform: translateY(-2px);
-}
-
 /* Advanced Section */
 .advanced-toggle {
     margin: 1rem 0;
@@ -1241,28 +1230,6 @@ button:hover {
     font-weight: bold;
 }
 
-.pause-btn {
-    display: block;
-    width: 100%;
-    padding: 1rem 2rem;
-    margin: 0.5rem 0;
-    border-radius: 8px;
-    border: 2px solid var(--primary-glow);
-    background: rgba(255, 0, 85, 0.1);
-    color: white;
-    font-weight: bold;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-decoration: none;
-    text-align: center;
-}
-
-.pause-btn:hover {
-    background: var(--primary-glow);
-    box-shadow: 0 0 20px var(--primary-glow);
-    transform: translateY(-2px);
-}
 
 /* Advanced Section */
 .advanced-toggle {
@@ -1565,12 +1532,12 @@ button:hover {
     transform: translateY(-3px);
 }
 
-.game-over-btn:first-child {
+.retry-btn {
     border-color: var(--secondary-glow);
     background: rgba(0, 229, 255, 0.1);
 }
 
-.game-over-btn:first-child:hover {
+.retry-btn:hover {
     background: var(--secondary-glow);
     box-shadow: 0 0 25px var(--secondary-glow);
 }
@@ -1647,4 +1614,39 @@ button:hover {
 
 .removed {
     display: none;
+}
+
+.material-symbols-outlined {
+    translate: 0px 3px;
+}
+
+
+
+#audio-visualizer {
+    position: relative;
+    width: 49%;
+    height: 60px;
+    justify-self: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    pointer-events: none;
+    translate: 0 15px;
+    z-index: -1;
+}
+
+.audio-bar {
+    width: 4px;
+    background: var(--primary-glow); /* red glow color */
+    border-radius: 50px;
+    opacity: 0.9;
+
+    transition: height 0.08s ease-out;
+
+    /* glow like the screenshot */
+    box-shadow:
+            0 0 6px var(--primary-glow)CC;
+
+    /* slight curve like in the picture */
+    transform-origin: bottom center;
 }

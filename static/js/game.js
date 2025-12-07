@@ -14,6 +14,11 @@ class Game {
         const font = localStorage.getItem('fontStyle') || 'outfit';
         document.body.className = `theme-${scheme} font-${font}`;
 
+        const visualizerValue = localStorage.getItem('visualizerEnabled') || 'true';
+        this.visualizerEnabled = visualizerValue === 'true';
+        console.log(visualizerValue);
+        console.log(this.visualizerEnabled);
+
         // Horizontal settings
         this.travelTime = 3000;
         this.hitWindow = 200; // Increased from 150ms for more forgiveness
@@ -31,6 +36,7 @@ class Game {
         this.accuracyEl = document.getElementById('accuracy');
         this.progressBar = document.getElementById('progress-bar');
         this.songTitleEl = document.getElementById('song-title');
+        this.gameOverSongTitleEl = document.getElementById('game-over-song-title');
 
         this.totalNotes = 0;
         this.hitNotes = 0;
@@ -49,6 +55,14 @@ class Game {
         } else {
             console.error("SONG_DATA is missing or invalid.");
         }
+
+        // Audio Visualizer
+        this.audioContext = null;
+        this.analyser = null;
+        this.freqData = null;
+
+        this.visualizerEl = document.getElementById("audio-visualizer");
+        this.visualizerBars = [];
     }
 
     bindEvents() {
@@ -96,6 +110,14 @@ class Game {
             resumeBtn.addEventListener('click', () => this.togglePause());
         }
 
+        // pause retry button
+        const retryBtn = document.getElementById('pause-retry-btn');
+
+        // Retry button handler
+        if (retryBtn) {
+            retryBtn.onclick = () => window.location.reload();
+        }
+
         // Top Pause Button
         const pauseBtnTop = document.getElementById('pause-btn-top');
         if (pauseBtnTop) {
@@ -137,6 +159,7 @@ class Game {
 
     initGame(data) {
         if (this.songTitleEl) this.songTitleEl.innerText = data.title;
+        if (this.gameOverSongTitleEl) this.gameOverSongTitleEl.innerText = data.title;
 
         // Set background image
         const bgEl = document.getElementById('game-background');
@@ -207,6 +230,10 @@ class Game {
         this.audio.play().catch(e => console.error("Audio play failed:", e));
         this.startTime = performance.now();
         this.isPlaying = true;
+
+        if (this.visualizerEnabled) {
+            this.initVisualizer();
+        }
         this.loop();
     }
 
@@ -220,6 +247,18 @@ class Game {
             const progress = (this.audio.currentTime / this.audio.duration) * 100;
             if (this.progressBar) this.progressBar.style.width = `${progress}%`;
         }
+
+        // Update visualizer
+        if (this.analyser && this.visualizerEnabled) {
+            this.analyser.getByteFrequencyData(this.freqData);
+            for (let i = 0; i < this.visualizerBars.length; i++) {
+                const bar = this.visualizerBars[i];
+                const h = (this.freqData[i] / 255) * 35; // max height 35px
+                bar.style.height = `${h}px`;
+            }
+        }
+
+
 
         const spawnWindow = syncTime + this.travelTime;
 
@@ -586,6 +625,31 @@ class Game {
         // Retry button handler
         if (retryBtn) {
             retryBtn.onclick = () => window.location.reload();
+        }
+    }
+
+    initVisualizer() {
+        if (!this.audioContext) {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const source = this.audioContext.createMediaElementSource(this.audio);
+
+            this.analyser = this.audioContext.createAnalyser();
+            this.analyser.fftSize = 64; // low number = smoother bars
+            this.freqData = new Uint8Array(this.analyser.frequencyBinCount);
+
+            source.connect(this.analyser);
+            this.analyser.connect(this.audioContext.destination);
+
+            // Build bars
+            this.visualizerEl.innerHTML = "";
+            this.visualizerBars = [];
+
+            for (let i = 0; i < this.analyser.frequencyBinCount; i++) {
+                const bar = document.createElement("div");
+                bar.className = "audio-bar";
+                this.visualizerEl.appendChild(bar);
+                this.visualizerBars.push(bar);
+            }
         }
     }
 }

@@ -15,8 +15,8 @@
 
 <body>
     <div class="app-container">
-        <h1 class="game-title">Typing Rhythm</h1>
         <div id="menu-screen" class="screen active">
+            <h1 class="game-title">Typing Rhythm</h1>
 
             <div class="input-section">
                 <div class="input-group">
@@ -25,7 +25,9 @@
                 </div>
 
                 <div class="advanced-toggle">
-                    <button id="advanced-btn" type="button">⚙️ Advanced Options</button>
+                    <button id="advanced-btn" type="button">
+                        <span class="material-symbols-outlined">settings</span>
+                        Advanced Options</button>
                 </div>
 
                 <div id="loading-status" class="hidden">Processing song...</div>
@@ -46,7 +48,7 @@
                     <label for="case-sensitive" style="margin: 0; display: inline;">Case Sensitive Mode</label>
                 </div>
                 <div style="margin-top: 0.5rem; display: flex; align-items: center; gap: 10px;">
-                    <input type="checkbox" id="include-spaces" style="width: auto;" checked="true">
+                    <input type="checkbox" id="include-spaces" style="width: auto;" checked="checked">
                     <label for="include-spaces" style="margin: 0; display: inline;">Include Spaces in Beatmap</label>
                 </div>
             </div>
@@ -111,6 +113,8 @@
                     <option value="comic">Comic</option>
                 </select>
 
+                <label for="enable-visualizer" style="margin-top: 1rem; display: inline;">Enable Visualizer:</label>
+                <input type="checkbox" id="enable-visualizer" checked="checked">
             </div>
 
         </div>
@@ -179,6 +183,16 @@
             const font = e.target.value;
             localStorage.setItem('fontStyle', font);
             updateBodyClasses();
+        });
+
+        // Enable Visualizer
+        const visualizerCheckbox = document.getElementById('enable-visualizer');
+        const savedVisualizer = localStorage.getItem('visualizerEnabled') || 'true';
+        visualizerCheckbox.checked = savedVisualizer === 'true' ? 'checked' : '';
+
+        visualizerCheckbox.addEventListener('change', (e) => {
+            const value = e.target.checked;
+            localStorage.setItem('visualizerEnabled', value);
         });
 
         function updateBodyClasses() {
