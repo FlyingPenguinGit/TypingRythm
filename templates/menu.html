@@ -26,7 +26,7 @@
 
                 <div class="advanced-toggle">
                     <button id="advanced-btn" type="button">
-                        <span class="material-symbols-outlined">settings</span>
+                        <span class="material-symbols-outlined icon-move-down">settings</span>
                         Advanced Options</button>
                 </div>
 
@@ -54,21 +54,62 @@
             </div>
 
             <div id="song-list-container" class="song-list-container">
-                <h2>PROCESSED SONGS</h2>
-                <div class="song-list">
+                <div class="list-header"
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="margin: 0;">PROCESSED SONGS</h2>
+                    <div class="list-controls" style="display: flex; align-items: center; gap: 10px;">
+
+                        <!-- Search Container -->
+                        <div class="search-container"
+                            style="display: flex; align-items: center; background: rgba(0,0,0,0.3); border-radius: 20px; padding: 5px 10px; transition: all 0.3s ease;">
+                            <span class="material-symbols-outlined search-icon"
+                                style="cursor: pointer; opacity: 0.7;">search</span>
+                            <input type="text" id="params-search" placeholder="Search..."
+                                style="width: 0; padding: 0; border: none; background: transparent; color: white; transition: all 0.3s ease; opacity: 0;">
+                        </div>
+
+                        <!-- Sort Controls -->
+                        <div class="sort-container" style="display: flex; align-items: center; gap: 5px;">
+                            <select id="params-sort"
+                                style="padding: 5px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; font-size: 0.9em;">
+                                <option value="title">Title</option>
+                                <option value="bpm">BPM</option>
+                                <option value="difficulty">Difficulty</option>
+                            </select>
+                            <button id="params-sort-dir">
+                                <span class="material-symbols-outlined"
+                                    style="font-size: 1.2em; opacity: 0.9;">arrow_downward</span>
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="song-list" id="main-song-list">
                     {% for song in songs %}
-                    <a href="/game/{{ song.id }}" class="song-card">
-                        <div style="position: relative;">
+                    <a href="/game/{{ song.id }}" class="song-card" data-title="{{ song.title | lower }}"
+                        data-bpm="{{ song.bpm }}" data-difficulty="{{ song.difficulty }}">
+                        <div class="thumbnail-container" style="position: relative; overflow: clip;">
                             <img src="{{ song.thumbnail }}" alt="Thumbnail">
+                            <button class="practice-btn" data-id="{{ song.id }}" data-duration="{{ song.duration }}">
+                                <span class="material-symbols-outlined">fitness_center</span>
+                            </button>
+                            {% if is_admin %}
+                            <button class="admin-btn delete-btn" data-id="{{ song.id }}">
+                                <span class="material-symbols-outlined">delete</span>
+                            </button>
+                            <button class="admin-btn regen-btn" data-id="{{ song.id }}">
+                                <span class="material-symbols-outlined">refresh</span>
+                            </button>
+                            {% endif %}
                         </div>
                         <div class="song-info">
                             <div class="song-title">{{ song.title }}</div>
                             <div class="song-duration">
                                 <span class="duration-display" data-duration="{{ song.duration }}"></span> • {{ song.bpm
-                                }} BPM
+                                | int}} BPM
                                 <span class="difficulty">
-                                    {% for i in range(song.difficulty) %}★{% endfor %}{% for i in range(5 -
-                                    song.difficulty) %}☆{% endfor %}
+                                    {% for i in range(song.difficulty | int) %}★{% endfor %}{% for i in range(5 -
+                                    (song.difficulty | int)) %}☆{% endfor %}
                                 </span>
                                 {% if song.include_spaces %}
                                 <span class="material-symbols-outlined song-property-icon"
@@ -117,6 +158,54 @@
                 <input type="checkbox" id="enable-visualizer" checked="checked">
             </div>
 
+        </div>
+
+        <!-- Admin Login Modal -->
+        <div id="admin-login-modal" class="modal {% if not request_auth %}hidden{% endif %}"
+            style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; z-index: 2000;">
+            <div class="modal-content"
+                style="background: #2a2a2a; padding: 2rem; border-radius: 12px; width: 350px; text-align: center; border: 1px solid var(--primary-glow);">
+                <h2 style="margin-top: 0; color: var(--primary-glow); margin-bottom: 1.5rem;">Admin Access</h2>
+                <input type="password" id="admin-password" placeholder="Enter Password"
+                    style="width: 100%; padding: 10px; margin-bottom: 1rem; background: rgba(0,0,0,0.3); border: 1px solid #555; color: white;">
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button onclick="window.location.href='/'"
+                        style="background: transparent; border: 1px solid #666; padding: 8px 16px; color: #ccc;">Cancel</button>
+                    <button id="admin-login-btn"
+                        style="background: var(--primary-glow); border: none; padding: 8px 24px; color: black; font-weight: bold;">Login</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Practice Modal -->
+        <div id="practice-modal" class="modal hidden"
+            style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000;">
+            <div class="modal-content"
+                style="background: #2a2a2a; padding: 2rem; border-radius: 12px; width: 400px; max-width: 90%; color: white; border: 1px solid var(--primary-glow);">
+                <h2 style="margin-top: 0; color: var(--primary-glow); display: flex; align-items: center; gap: 10px;">
+                    <span class="material-symbols-outlined">fitness_center</span> Practice Mode
+                </h2>
+
+                <div class="input-group" style="margin-bottom: 1.5rem; display: block;">
+                    <label for="practice-speed" style="display: block; margin-bottom: 0.5rem;">Playback Speed: <span
+                            id="practice-speed-val">1.0</span>x</label>
+                    <input type="range" id="practice-speed" min="0.5" max="2.0" step="0.05" value="1.0"
+                        style="width: 100%;">
+                </div>
+
+                <div class="input-group" style="margin-bottom: 2rem; display: block;">
+                    <label for="practice-start" style="display: block; margin-bottom: 0.5rem;">Start Time: <span
+                            id="practice-start-val">0</span>s</label>
+                    <input type="range" id="practice-start" min="0" max="100" step="1" value="0" style="width: 100%;">
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button id="practice-cancel-btn"
+                        style="background: transparent; border: 1px solid #666; padding: 8px 16px; color: #ccc; cursor: pointer; border-radius: 4px;">Cancel</button>
+                    <button id="practice-start-btn"
+                        style="background: var(--primary-glow); border: none; padding: 8px 24px; color: black; font-weight: bold; cursor: pointer; border-radius: 4px;">START</button>
+                </div>
+            </div>
         </div>
 
         <div id="settings-button" class="settings-button">
@@ -260,6 +349,62 @@
             }
         });
 
+        // Admin Actions
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!confirm('Delete this song?')) return;
+
+                const id = btn.dataset.id;
+                try {
+                    const res = await fetch(`/delete_song/${id}`, { method: 'DELETE' });
+                    const data = await res.json();
+                    if (data.status === 'success') window.location.reload();
+                } catch (e) {
+                    alert('Delete failed');
+                }
+            });
+        });
+
+        document.querySelectorAll('.regen-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!confirm('Regenerate beatmap for this song using current Advanced Options?')) return;
+
+                const id = btn.dataset.id;
+
+                // Get current values from advanced section
+                const customLyrics = document.getElementById('custom-lyrics').value;
+                const monotoneFactor = document.getElementById('monotone-slider').value;
+                const caseSensitive = document.getElementById('case-sensitive').checked;
+                const includeSpaces = document.getElementById('include-spaces').checked;
+
+                try {
+                    const res = await fetch(`/regenerate_beatmap/${id}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            custom_lyrics: customLyrics,
+                            monotone_factor: monotoneFactor,
+                            case_sensitive: caseSensitive,
+                            include_spaces: includeSpaces
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.status === 'success') {
+                        alert('Regenerated!');
+                        window.location.reload();
+                    }
+                } catch (e) {
+                    alert('Regeneration failed');
+                }
+            });
+        });
+
         // Load Scores from LocalStorage
         document.addEventListener('DOMContentLoaded', () => {
             const storageKey = 'typing_rhythm_scores';
@@ -280,7 +425,7 @@
 
                 if (scores[videoId]) {
                     const scoreData = scores[videoId];
-                    const imgContainer = card.querySelector('div[style="position: relative;"]');
+                    const imgContainer = card.querySelector('.thumbnail-container');
 
                     if (imgContainer && scoreData.grade) {
                         const badge = document.createElement('div');
@@ -296,6 +441,173 @@
                 }
             });
         });
+
+        // Search and Sort Logic
+        const searchInput = document.getElementById('params-search');
+        const sortSelect = document.getElementById('params-sort');
+        const sortDirBtn = document.getElementById('params-sort-dir');
+        const songList = document.getElementById('main-song-list');
+        let sortAsc = true;
+
+        function filterAndSort() {
+            const query = searchInput.value.toLowerCase();
+            const sortKey = sortSelect.value;
+            const cards = Array.from(songList.getElementsByClassName('song-card'));
+
+            // 1. Filter
+            cards.forEach(card => {
+                const title = card.dataset.title || '';
+                if (title.includes(query)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // 2. Sort
+            cards.sort((a, b) => {
+                let valA, valB;
+
+                if (sortKey === 'title') {
+                    valA = a.dataset.title || '';
+                    valB = b.dataset.title || '';
+                    if (valA < valB) return sortAsc ? -1 : 1;
+                    if (valA > valB) return sortAsc ? 1 : -1;
+                    return 0;
+                } else {
+                    // Numeric sort
+                    valA = parseFloat(a.dataset[sortKey]) || 0;
+                    valB = parseFloat(b.dataset[sortKey]) || 0;
+                    return sortAsc ? (valA - valB) : (valB - valA);
+                }
+            });
+
+            // Re-append
+            cards.forEach(card => songList.appendChild(card));
+        }
+
+        if (searchInput && sortSelect && sortDirBtn) {
+            searchInput.addEventListener('input', filterAndSort);
+            sortSelect.addEventListener('change', filterAndSort);
+
+            sortDirBtn.addEventListener('click', () => {
+                sortAsc = !sortAsc;
+                sortDirBtn.querySelector('span').innerText = sortAsc ? 'arrow_downward' : 'arrow_upward';
+                filterAndSort();
+            });
+
+            // Expandable Search Logic
+            const searchIcon = document.querySelector('.search-icon');
+            let isExpanded = false;
+
+            if (searchIcon) {
+                searchIcon.addEventListener('click', () => {
+                    isExpanded = !isExpanded;
+                    if (isExpanded) {
+                        searchInput.style.width = '200px';
+                        searchInput.style.padding = '5px';
+                        searchInput.style.opacity = '1';
+                        searchInput.style.pointerEvents = 'auto'; // ensure expanding enables interaction if needed
+                        searchInput.focus();
+                    } else {
+                        searchInput.style.width = '0';
+                        searchInput.style.padding = '0';
+                        searchInput.style.opacity = '0';
+                        // Optional: Clear search on close
+                        // searchInput.value = ''; 
+                        // filterAndSort(); 
+                    }
+                });
+            }
+
+            // Auto-close if empty on blur
+            searchInput.addEventListener('blur', () => {
+                if (searchInput.value === '' && isExpanded) {
+                    isExpanded = false;
+                    searchInput.style.width = '0';
+                    searchInput.style.padding = '0';
+                    searchInput.style.opacity = '0';
+                }
+            });
+
+            // Practice Mode Logic
+            const practiceModal = document.getElementById('practice-modal');
+            const practiceSpeedSlider = document.getElementById('practice-speed');
+            const practiceStartSlider = document.getElementById('practice-start');
+            const practiceSpeedVal = document.getElementById('practice-speed-val');
+            const practiceStartVal = document.getElementById('practice-start-val');
+            const practiceStartBtn = document.getElementById('practice-start-btn');
+            const practiceCancelBtn = document.getElementById('practice-cancel-btn');
+            let currentPracticeId = null;
+
+            // Open Modal
+            document.querySelectorAll('.practice-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const id = btn.dataset.id;
+                    const duration = parseFloat(btn.dataset.duration);
+
+                    currentPracticeId = id;
+                    practiceStartSlider.max = Math.floor(duration);
+                    practiceStartSlider.value = 0;
+                    practiceSpeedSlider.value = 1.0;
+
+                    practiceSpeedVal.innerText = "1.0";
+                    practiceStartVal.innerText = "0";
+
+                    practiceModal.classList.remove('hidden');
+                });
+            });
+
+            // Close Modal
+            practiceCancelBtn.addEventListener('click', () => {
+                practiceModal.classList.add('hidden');
+                currentPracticeId = null;
+            });
+
+            // Sliders
+            practiceSpeedSlider.addEventListener('input', (e) => practiceSpeedVal.innerText = e.target.value);
+            practiceStartSlider.addEventListener('input', (e) => practiceStartVal.innerText = e.target.value);
+
+            // Start Game
+            practiceStartBtn.addEventListener('click', () => {
+                if (!currentPracticeId) return;
+                const speed = practiceSpeedSlider.value;
+                const start = practiceStartSlider.value;
+                window.location.href = `/game/${currentPracticeId}?practice=true&speed=${speed}&start=${start}`;
+            });
+
+            // Admin Login Logic
+            const adminLoginBtn = document.getElementById('admin-login-btn');
+            const adminPasswordInput = document.getElementById('admin-password');
+
+            if (adminLoginBtn) {
+                const submitLogin = async () => {
+                    const password = adminPasswordInput.value;
+                    try {
+                        const res = await fetch('/login_admin', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ password })
+                        });
+                        const data = await res.json();
+                        if (data.status === 'success') {
+                            window.location.reload();
+                        } else {
+                            alert('Incorrect Password');
+                        }
+                    } catch (e) {
+                        alert('Login error');
+                    }
+                };
+
+                adminLoginBtn.addEventListener('click', submitLogin);
+                adminPasswordInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') submitLogin();
+                });
+            }
+        }
     </script>
 </body>
 

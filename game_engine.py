@@ -106,16 +106,47 @@ def generate_beat_map(analysis_data, lyrics_text=None, monotone_factor=0.5, case
     duration = analysis_data.get('duration', 1)
     if duration <= 0: duration = 1
     
+    # 1. Density (NPS)
     nps = len(notes) / duration
     
-    if nps < 1.0: difficulty = 1
-    elif nps < 2.0: difficulty = 2
-    elif nps < 3.0: difficulty = 3
-    elif nps < 4.5: difficulty = 4
-    else: difficulty = 5
+    # 2. Complexity (Interval Jitter)
+    # Calculate time differences between notes
+    intervals = []
+    for i in range(1, len(notes)):
+        diff = notes[i]['time'] - notes[i-1]['time']
+        intervals.append(diff)
+        
+    variance_score = 0
+    if intervals:
+        avg_interval = sum(intervals) / len(intervals)
+        if avg_interval > 0:
+            std_dev = np.std(intervals)
+            # COV: Coefficient of Variation
+            variance_score = std_dev / avg_interval
+            
+    # Base Score formulation
+    # NPS is dominant. 
+    score = nps * 1.0
+    
+    # Adjust for complexity (irregularity makes it harder)
+    # If variance is high (e.g. > 0.5), boost score
+    # We cap the boost to avoid it becoming too crazy
+    complexity_mult = 1.0 + (min(variance_score, 1.0) * 0.3)
+    score *= complexity_mult
 
+    # 3. Mechanical Modifiers
     if case_sensitive:
-        difficulty = max(difficulty + 1, 5)
+        score *= 1.3 # 30% harder
+    
+    if include_spaces:
+        score *= 1.1 # 10% harder
+
+    # Mapping to 1-5 scale (adjusted thresholds)
+    if score < 1.5: difficulty = 1
+    elif score < 2.5: difficulty = 2
+    elif score < 4.0: difficulty = 3
+    elif score < 6.0: difficulty = 4
+    else: difficulty = 5
         
     return {
         'notes': notes,

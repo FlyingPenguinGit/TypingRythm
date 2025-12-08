@@ -125,7 +125,6 @@ body {
 }
 
 input {
-    padding: 1rem;
     border-radius: 8px;
     border: none;
     background: rgba(255, 255, 255, 0.1);
@@ -162,6 +161,7 @@ button:hover {
     max-height: 57vh;
     overflow-y: scroll;
     scrollbar-width: none;
+    height: -webkit-fill-available;
 }
 
 
@@ -340,88 +340,6 @@ button:hover {
     box-shadow: 0 0 20px var(--secondary-glow), inset 0 0 20px var(--secondary-glow);
 }
 
-.difficulty {
-    color: #ffd700;
-    font-size: 1rem;
-    margin-left: 10px;
-}
-
-/* Game Styles */
-.ui-top {
-    position: absolute;
-    top: 2rem;
-    width: 100%;
-    padding: 0 4rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    font-weight: bold;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-    z-index: 100;
-}
-
-.score-box,
-.accuracy-box,
-.combo-box {
-    text-align: center;
-}
-
-.label {
-    font-size: 0.8rem;
-    opacity: 0.7;
-    letter-spacing: 2px;
-    color: var(--secondary-glow);
-    margin-bottom: 0.5rem;
-}
-
-.value {
-    font-size: 2.5rem;
-    font-weight: 900;
-}
-
-#game-background {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-size: cover;
-    background-position: center;
-    opacity: 0.125;
-    filter: blur(15px);
-    z-index: -1;
-}
-
-#countdown-overlay {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 15rem;
-    font-weight: 900;
-    color: var(--secondary-glow);
-    text-shadow: 0 0 50px var(--secondary-glow), 0 0 100px var(--primary-glow);
-    z-index: 1000;
-    pointer-events: none;
-    animation: pulse 1s infinite;
-}
-
-@keyframes pulse {
-    0% {
-        transform: translate(-50%, -50%) scale(1);
-        opacity: 1;
-    }
-
-    50% {
-        transform: translate(-50%, -50%) scale(1.2);
-        opacity: 0.8;
-    }
-
-    100% {
-        transform: translate(-50%, -50%) scale(1);
-        opacity: 1;
-    }
-}
 
 .game-area.horizontal {
     width: 100%;
@@ -936,7 +854,8 @@ button:hover {
     transform: translateY(-2px);
 }
 
-.settings-screen select, .settings-screen input {
+.settings-screen select,
+.settings-screen input {
     padding: 1rem 2rem;
     margin: 0.7rem;
     background: rgb(0 0 0 / 78%);
@@ -1542,6 +1461,19 @@ button:hover {
     box-shadow: 0 0 25px var(--secondary-glow);
 }
 
+
+.practice-btn {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    padding: 8px;
+    text-align: center;
+    z-index: 5;
+    background: #000000b5;
+    border-top-left-radius: 20px;
+    box-shadow: #000000c2 2px 2px 15px 7px;
+}
+
 /* Grade Badge Styles */
 .grade-badge {
     position: absolute;
@@ -1616,11 +1548,9 @@ button:hover {
     display: none;
 }
 
-.material-symbols-outlined {
+.icon-move-down {
     translate: 0px 3px;
 }
-
-
 
 #audio-visualizer {
     position: relative;
@@ -1637,7 +1567,8 @@ button:hover {
 
 .audio-bar {
     width: 4px;
-    background: var(--primary-glow); /* red glow color */
+    background: var(--primary-glow);
+    /* red glow color */
     border-radius: 50px;
     opacity: 0.9;
 
@@ -1645,8 +1576,57 @@ button:hover {
 
     /* glow like the screenshot */
     box-shadow:
-            0 0 6px var(--primary-glow)CC;
+        0 0 6px var(--primary-glow)CC;
 
     /* slight curve like in the picture */
     transform-origin: bottom center;
+}
+
+.admin-btn {
+    position: absolute;
+    left: 0;
+    background-color: #00000081;
+    cursor: pointer;
+    border-radius: 0;
+    transition: background-color 0.3s ease;
+    z-index: 1000;
+}
+
+.delete-btn {
+    color: rgb(255, 0, 0);
+    bottom: 0;
+}
+
+.delete-btn:hover {
+    background-color: #cc00007a;
+    box-shadow: none;
+}
+
+.regen-btn {
+    color: rgb(0, 255, 21);
+    top: 0;
+}
+
+.regen-btn:hover {
+    background-color: #00c40081;
+    box-shadow: none;
+}
+
+
+#params-sort-dir {
+    background: none;
+    display: flex;
+    align-items: center;
+    border: none;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 0;
+    padding: 0;
+    transition: transform 0.1s;
+}
+
+#params-sort-dir:hover {
+    transform: scale(1.05);
+    box-shadow: none;
 }

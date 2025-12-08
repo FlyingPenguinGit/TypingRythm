@@ -1,5 +1,19 @@
 class Game {
     constructor() {
+        // Read config from data attributes
+        const configEl = document.getElementById('game-config');
+        if (configEl) {
+            window.GAME_CONFIG = {
+                practice: configEl.dataset.practice === 'True',
+                speed: parseFloat(configEl.dataset.speed) || 1.0,
+                startTime: parseFloat(configEl.dataset.startTime) || 0.0
+            };
+        } else {
+            window.GAME_CONFIG = { practice: false, speed: 1.0, startTime: 0.0 };
+        }
+
+
+
         this.audio = new Audio();
         this.isPlaying = false;
         this.gameOver = false;
@@ -16,8 +30,6 @@ class Game {
 
         const visualizerValue = localStorage.getItem('visualizerEnabled') || 'true';
         this.visualizerEnabled = visualizerValue === 'true';
-        console.log(visualizerValue);
-        console.log(this.visualizerEnabled);
 
         // Horizontal settings
         this.travelTime = 3000;
@@ -197,6 +209,16 @@ class Game {
             element: null
         }));
 
+        // Practice Mode: Skip notes before start time
+        if (typeof GAME_CONFIG !== 'undefined' && GAME_CONFIG.startTime > 0) {
+            const skipTime = GAME_CONFIG.startTime * 1000;
+            this.notes.forEach(n => {
+                if (n.time < skipTime) {
+                    n.hit = true; // Mark as hit so they don't spawn or count as miss
+                }
+            });
+        }
+
         const startDelay = 1500; // 1.5 seconds for countdown
         const countdownEl = document.getElementById('countdown-overlay');
 
@@ -227,6 +249,11 @@ class Game {
     }
 
     startPlayback() {
+        if (typeof GAME_CONFIG !== 'undefined') {
+            this.audio.currentTime = GAME_CONFIG.startTime || 0;
+            this.audio.playbackRate = GAME_CONFIG.speed || 1.0;
+        }
+
         this.audio.play().catch(e => console.error("Audio play failed:", e));
         this.startTime = performance.now();
         this.isPlaying = true;
@@ -340,7 +367,6 @@ class Game {
 
         if (!this.isPlaying) return;
         if (e.ctrlKey || e.altKey || e.metaKey || e.key === 'Shift') {
-            console.log(e.key);
             return;
         }
 
@@ -418,6 +444,11 @@ class Game {
     }
 
     updateHealth(amount) {
+        // Practice Mode: Invincible (No damage)
+        if (typeof GAME_CONFIG !== 'undefined' && GAME_CONFIG.practice && amount < 0) {
+            return;
+        }
+
         this.currentHealth += amount;
         if (this.currentHealth > this.maxHealth) this.currentHealth = this.maxHealth;
         if (this.currentHealth <= 0) {
@@ -516,16 +547,29 @@ class Game {
 
     endGame(failed = false) {
         this.isPlaying = false;
-        this.togglePause();
-        this.gameOver = true;
 
-        const grade = this.calculateGrade();
-
-        if (!failed) {
+        if (failed) {
+            // Tape Stop Effect
+            const fadeInterval = setInterval(() => {
+                if (this.audio.playbackRate > 0.1) {
+                    // Reduce, but ensure we don't go below valid range accidentally
+                    this.audio.playbackRate = Math.max(0, this.audio.playbackRate - 0.025);
+                    this.notesLayer.style.opacity = this.audio.playbackRate;
+                } else {
+                    clearInterval(fadeInterval);
+                    this.audio.pause();
+                    this.notesLayer.style.opacity = 0;
+                    this.gameOver = true;
+                    this.showGameOverOverlay(true, 'F');
+                }
+            }, 50);
+        } else {
+            this.togglePause(); // Just pause normally
+            this.gameOver = true;
+            const grade = this.calculateGrade();
             this.saveScore(this.score, grade);
+            this.showGameOverOverlay(false, grade);
         }
-
-        this.showGameOverOverlay(failed, grade);
 
         this.setCookie('calibrationOffset', this.calibrationOffset, 365);
     }
@@ -556,6 +600,8 @@ class Game {
     }
 
     saveScore(score, grade) {
+        if (typeof GAME_CONFIG !== 'undefined' && GAME_CONFIG.practice) return;
+
         const videoId = window.location.pathname.split('/').pop();
         const storageKey = 'typing_rhythm_scores';
 

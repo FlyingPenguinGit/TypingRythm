@@ -5,3 +5,5 @@ librosa
 numpy
 eventlet
 pydub
+flask-sqlalchemy
+psycopg2-binary
