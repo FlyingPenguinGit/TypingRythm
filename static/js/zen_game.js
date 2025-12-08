@@ -163,7 +163,7 @@ class ZenGame {
 
         // Load audio
         const videoId = window.location.pathname.split('/').pop();
-        this.audio.src = `/static/songs/${videoId}.mp3`;
+        this.audio.src = `/audio/${videoId}`;
         this.audio.load();
 
         // Countdown
