@@ -21,6 +21,8 @@ class Song(db.Model):
     case_sensitive = db.Column(db.Boolean, default=False)
     include_spaces = db.Column(db.Boolean, default=False)
     
+    version = db.Column(db.Integer, default=1)
+    
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
 
     def to_dict(self):
@@ -34,6 +36,7 @@ class Song(db.Model):
             'case_sensitive': self.case_sensitive,
             'include_spaces': self.include_spaces,
             'beat_map': self.beat_map,
+            'version': self.version or 1,
              # Return analysis-like structure for compatibility if needed
             'analysis': {
                 'bpm': self.bpm,

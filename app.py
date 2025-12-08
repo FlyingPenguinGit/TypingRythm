@@ -100,6 +100,39 @@ def regenerate_beatmap(video_id):
     custom_lyrics = data.get('custom_lyrics', '')
 
     # Re-construct analysis data
+    # Check if analysis data is complete; if not, re-analyze
+    if not song.onset_times or not song.beat_times:
+        print(f"Missing analysis data for {video_id}, re-analyzing...")
+        # Need to fetch audio data to re-analyze. 
+        # Since we serve form DB, we might need a temp file or update AudioEngine to accept bytes.
+        # But wait, AudioEngine.analyze_audio takes a file path.
+        # Let's write the binary to a temp file.
+        import tempfile
+        import os
+        import audio_engine
+
+        with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp:
+            tmp.write(song.audio_file)
+            tmp_path = tmp.name
+        
+        try:
+             # Re-run analysis
+            analysis_data = audio_engine.analyze_audio(tmp_path)
+            
+            if analysis_data:
+                # Update Song object with new data
+                song.bpm = analysis_data['bpm']
+                song.beat_times = analysis_data['beat_times']
+                song.onset_times = analysis_data['onset_times']
+                song.duration = analysis_data['duration']
+            
+                # Commit these updates so next time it's fast
+                db.session.commit()
+            
+        finally:
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
+
     analysis = {
         'bpm': song.bpm,
         'duration': song.duration,
@@ -119,6 +152,7 @@ def regenerate_beatmap(video_id):
     # Update DB
     song.beat_map = beat_map
     song.difficulty = difficulty
+    song.version = (song.version or 1) + 1  # Increment version
     db.session.commit()
     
     return jsonify({'status': 'success', 'video_id': video_id})

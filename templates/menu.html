@@ -87,7 +87,8 @@
                 <div class="song-list" id="main-song-list">
                     {% for song in songs %}
                     <a href="/game/{{ song.id }}" class="song-card" data-title="{{ song.title | lower }}"
-                        data-bpm="{{ song.bpm }}" data-difficulty="{{ song.difficulty }}">
+                        data-bpm="{{ song.bpm }}" data-difficulty="{{ song.difficulty }}"
+                        data-version="{{ song.version }}">
                         <div class="thumbnail-container" style="position: relative; overflow: clip;">
                             <img src="{{ song.thumbnail }}" alt="Thumbnail">
                             <button class="practice-btn" data-id="{{ song.id }}" data-duration="{{ song.duration }}">
@@ -396,6 +397,21 @@
                     });
                     const data = await res.json();
                     if (data.status === 'success') {
+                        // Clear local score for this song as the map has changed
+                        try {
+                            const storageKey = 'typing_rhythm_scores';
+                            const stored = localStorage.getItem(storageKey);
+                            if (stored) {
+                                const scores = JSON.parse(stored);
+                                if (scores[id]) {
+                                    delete scores[id];
+                                    localStorage.setItem(storageKey, JSON.stringify(scores));
+                                }
+                            }
+                        } catch (err) {
+                            console.error("Failed to clear score:", err);
+                        }
+
                         alert('Regenerated!');
                         window.location.reload();
                     }
@@ -426,8 +442,13 @@
                 if (scores[videoId]) {
                     const scoreData = scores[videoId];
                     const imgContainer = card.querySelector('.thumbnail-container');
+                    const songVersion = parseInt(card.dataset.version) || 1;
 
-                    if (imgContainer && scoreData.grade) {
+                    // Version Check: If score version mismatches song version, invalidate it
+                    if ((scoreData.version || 1) !== songVersion) {
+                        delete scores[videoId]; // Remove invalid score
+                        localStorage.setItem(storageKey, JSON.stringify(scores));
+                    } else if (imgContainer && scoreData.grade) {
                         const badge = document.createElement('div');
                         badge.className = `grade-badge grade-${scoreData.grade.toLowerCase()}`;
                         badge.innerHTML = `

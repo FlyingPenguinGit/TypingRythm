@@ -1507,32 +1507,32 @@ button:hover {
 
 .grade-s .grade-letter {
     color: #ffd700;
-    text-shadow: 0 0 10px #ffd700;
+    text-shadow: 0 0 0px #ffd700;
 }
 
 .grade-a .grade-letter {
     color: #00ff00;
-    text-shadow: 0 0 10px #00ff00;
+    text-shadow: 0 0 0px #00ff00;
 }
 
 .grade-b .grade-letter {
     color: #00ccff;
-    text-shadow: 0 0 10px #00ccff;
+    text-shadow: 0 0 0px #00ccff;
 }
 
 .grade-c .grade-letter {
     color: #ffff00;
-    text-shadow: 0 0 10px #ffff00;
+    text-shadow: 0 0 0px #ffff00;
 }
 
 .grade-d .grade-letter {
     color: #ff8800;
-    text-shadow: 0 0 10px #ff8800;
+    text-shadow: 0 0 0px #ff8800;
 }
 
 .grade-f .grade-letter {
     color: #ff0000;
-    text-shadow: 0 0 10px #ff0000;
+    text-shadow: 0 0 0px #ff0000;
 }
 
 

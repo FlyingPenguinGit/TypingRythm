@@ -34,7 +34,10 @@ def generate_beat_map(analysis_data, lyrics_text=None, monotone_factor=0.5, case
                 if random.random() < prob:
                     added_counter += 1
                     combined_times.append(onset)
-    print(f"{added_counter / len(onset_times) * 100} percent of off-beats were added")
+    if len(onset_times) > 0:
+        print(f"{added_counter / len(onset_times) * 100} percent of off-beats were added")
+    else:
+        print("No onset times available for off-beats.")
                 
     combined_times.sort()
     

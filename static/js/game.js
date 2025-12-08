@@ -350,8 +350,8 @@ class Game {
         // Arrow keys for volume control
         if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
             e.preventDefault();
-            const volumeSlider = document.getElementById('volume-slider');
-            const volumeValue = document.getElementById('volume-value');
+            const volumeSlider = document.getElementById('pause-volume-slider');
+            const volumeValue = document.getElementById('pause-volume-value');
             if (!volumeSlider) return;
 
             let currentVolume = parseInt(volumeSlider.value);
