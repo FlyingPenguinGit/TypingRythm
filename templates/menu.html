@@ -26,243 +26,253 @@
                 <button class="tab-btn" data-tab="settings">Settings</button>
             </div>
 
-            <!-- Tab Content: Processing -->
-            <div id="tab-process" class="tab-content">
-                <div class="input-section">
-                    <div class="input-group">
-                        <input type="text" id="youtube-url" placeholder="Paste YouTube URL here..." style="width: 55%;">
-                        <button id="process-btn">DOWNLOAD & PROCESS</button>
+            <div id="tab-content-container" style="width: 100%; min-height: 55%;">
+
+                <!-- Tab Content: Processing -->
+                <div id="tab-process" class="tab-content">
+                    <div class="input-section">
+                        <div class="input-group">
+                            <input type="text" id="youtube-url" placeholder="Paste YouTube URL here..."
+                                style="width: 55%; padding-left: 1rem;">
+                            <button id="process-btn">DOWNLOAD & PROCESS</button>
+                        </div>
+
+                        <div id="loading-status" class="hidden">Processing song...</div>
                     </div>
 
-                    <div id="loading-status" class="hidden">Processing song...</div>
-                </div>
+                    <!-- Advanced Generation Options -->
+                    <div class="song-list-container">
+                        <div class="advanced-section">
+                            <h3 style="margin-top: 0; color: var(--primary-glow);">Advanced Song Generation</h3>
 
-                <!-- Advanced Generation Options -->
-                <div class="advanced-section">
-                    <h3 style="margin-top: 0; color: var(--primary-glow);">Advanced Song Generation</h3>
+                            <label for="monotone-slider">Beatmap Monotony<br>(0 = Chaotic, 1 = Strict): <span
+                                    id="monotone-value">0.5</span></label>
+                            <input type="range" id="monotone-slider" min="0" max="1" step="0.01" value="0.5"
+                                style="width: 100%; padding: 0 0">
 
-                    <label for="monotone-slider">Beatmap Monotony<br>(0 = Chaotic, 1 = Strict): <span
-                            id="monotone-value">0.5</span></label>
-                    <input type="range" id="monotone-slider" min="0" max="1" step="0.01" value="0.5"
-                        style="width: 100%; padding: 0 0">
+                            <label for="custom-lyrics">Custom Lyrics (optional):</label>
+                            <textarea id="custom-lyrics"
+                                placeholder="Paste your custom lyrics here...&#10;Leave empty to use automatic"></textarea>
 
-                    <label for="custom-lyrics">Custom Lyrics (optional):</label>
-                    <textarea id="custom-lyrics"
-                        placeholder="Paste your custom lyrics here...&#10;Leave empty to use automatic"></textarea>
-
-                    <div style="margin-top: 1rem; display: flex; align-items: center; gap: 10px;">
-                        <input type="checkbox" id="case-sensitive" style="width: auto;">
-                        <label for="case-sensitive" style="margin: 0; display: inline;">Case Sensitive Mode</label>
-                    </div>
-                    <div style="margin-top: 0.5rem; display: flex; align-items: center; gap: 10px;">
-                        <input type="checkbox" id="include-spaces" style="width: auto;" checked="checked">
-                        <label for="include-spaces" style="margin: 0; display: inline;">Include Spaces in
-                            Beatmap</label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tab Content: Normal Mode -->
-            <div id="tab-normal" class="tab-content active">
-                <div id="normal-song-list-container" class="song-list-container">
-                    <div class="list-header"
-                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h2 style="margin: 0;">NORMAL MODE</h2>
-                        <div class="list-controls" style="display: flex; align-items: center; gap: 10px;">
-
-                            <!-- Search Container -->
-                            <div class="search-container"
-                                style="display: flex; align-items: center; background: rgba(0,0,0,0.3); border-radius: 20px; padding: 5px 10px; transition: all 0.3s ease;">
-                                <span class="material-symbols-outlined search-icon"
-                                    style="cursor: pointer; opacity: 0.7;">search</span>
-                                <input type="text" id="normal-search" placeholder="Search..."
-                                    style="width: 0; padding: 0; border: none; background: transparent; color: white; transition: all 0.3s ease; opacity: 0;">
+                            <div style="margin-top: 1rem; display: flex; align-items: center; gap: 10px;">
+                                <input type="checkbox" id="case-sensitive" style="width: auto;">
+                                <label for="case-sensitive" style="margin: 0; display: inline;">Case Sensitive
+                                    Mode</label>
                             </div>
-
-                            <!-- Sort Controls -->
-                            <div class="sort-container" style="display: flex; align-items: center; gap: 5px;">
-                                <select id="normal-sort"
-                                    style="padding: 5px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; font-size: 0.9em;">
-                                    <option value="title">Title</option>
-                                    <option value="bpm">BPM</option>
-                                    <option value="difficulty">Difficulty</option>
-                                </select>
-                                <button id="normal-sort-dir" class="sort-dir">
-                                    <span class="material-symbols-outlined"
-                                        style="font-size: 1.2em; opacity: 0.9;">arrow_downward</span>
-                                </button>
+                            <div style="margin-top: 0.5rem; display: flex; align-items: center; gap: 10px;">
+                                <input type="checkbox" id="include-spaces" style="width: auto;" checked="checked">
+                                <label for="include-spaces" style="margin: 0; display: inline;">Include Spaces in
+                                    Beatmap</label>
                             </div>
-
                         </div>
                     </div>
-                    <div class="song-list" id="normal-song-list">
-                        {% for song in songs %}
-                        <a href="/game/{{ song.id }}" class="song-card" data-title="{{ song.title | lower }}"
-                            data-bpm="{{ song.bpm }}" data-difficulty="{{ song.difficulty }}"
-                            data-version="{{ song.version }}">
-                            <div class="thumbnail-container" style="position: relative; overflow: clip;">
-                                <img src="{{ song.thumbnail }}" alt="Thumbnail">
-                                <button class="practice-btn" data-id="{{ song.id }}"
-                                    data-duration="{{ song.duration }}">
-                                    <span class="material-symbols-outlined">fitness_center</span>
-                                </button>
-                                {% if is_admin %}
-                                <button class="admin-btn delete-btn" data-id="{{ song.id }}">
-                                    <span class="material-symbols-outlined">delete</span>
-                                </button>
-                                <button class="admin-btn regen-btn" data-id="{{ song.id }}">
-                                    <span class="material-symbols-outlined">refresh</span>
-                                </button>
-                                {% endif %}
+                </div>
+
+                <!-- Tab Content: Normal Mode -->
+                <div id="tab-normal" class="tab-content active">
+                    <div id="normal-song-list-container" class="song-list-container">
+                        <div class="list-header"
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h2 style="margin: 0;">NORMAL MODE</h2>
+                            <div class="list-controls" style="display: flex; align-items: center; gap: 10px;">
+
+                                <!-- Search Container -->
+                                <div class="search-container"
+                                    style="display: flex; align-items: center; background: rgba(0,0,0,0.3); border-radius: 20px; padding: 5px 10px; transition: all 0.3s ease;">
+                                    <span class="material-symbols-outlined search-icon"
+                                        style="cursor: pointer; opacity: 0.7;">search</span>
+                                    <input type="text" id="normal-search" placeholder="Search..." autocomplete="off"
+                                        style="width: 0; padding: 0; border: none; background: transparent; color: white; transition: all 0.3s ease; opacity: 0;">
+                                </div>
+
+                                <!-- Sort Controls -->
+                                <div class="sort-container" style="display: flex; align-items: center; gap: 5px;">
+                                    <select id="normal-sort"
+                                        style="padding: 5px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; font-size: 0.9em;">
+                                        <option value="title">Title</option>
+                                        <option value="bpm">BPM</option>
+                                        <option value="difficulty">Difficulty</option>
+                                    </select>
+                                    <button id="normal-sort-dir" class="sort-dir">
+                                        <span class="material-symbols-outlined"
+                                            style="font-size: 1.2em; opacity: 0.9;">arrow_downward</span>
+                                    </button>
+                                </div>
+
                             </div>
-                            <div class="song-info">
-                                <div class="song-title">{{ song.title }}</div>
-                                <div class="song-duration">
-                                    <span class="duration-display" data-duration="{{ song.duration }}"></span> • {{
-                                    song.bpm
-                                    | int}} BPM
-                                    <span class="difficulty">
-                                        {% for i in range(song.difficulty | int) %}★{% endfor %}{% for i in range(5 -
-                                        (song.difficulty | int)) %}☆{% endfor %}
-                                    </span>
-                                    {% if song.include_spaces %}
-                                    <span class="material-symbols-outlined song-property-icon"
-                                        title="Includes spaces">space_bar</span>
-                                    {% endif %}
-                                    {% if song.case_sensitive %}
-                                    <span class="material-symbols-outlined song-property-icon"
-                                        title="Case sensitive">match_case</span>
-                                    {% else %}
-                                    <span class="material-symbols-outlined song-property-icon"
-                                        title="Case insensitive">match_case_off</span>
+                        </div>
+                        <div class="song-list" id="normal-song-list">
+                            {% for song in songs %}
+                            <a href="/game/{{ song.id }}" class="song-card" data-title="{{ song.title | lower }}"
+                                data-bpm="{{ song.bpm }}" data-difficulty="{{ song.difficulty }}"
+                                data-version="{{ song.version }}">
+                                <div class="thumbnail-container" style="position: relative; overflow: clip;">
+                                    <img src="{{ song.thumbnail }}" alt="Thumbnail">
+                                    <button class="practice-btn" data-id="{{ song.id }}"
+                                        data-duration="{{ song.duration }}">
+                                        <span class="material-symbols-outlined">fitness_center</span>
+                                    </button>
+                                    {% if is_admin %}
+                                    <button class="admin-btn delete-btn" data-id="{{ song.id }}">
+                                        <span class="material-symbols-outlined">delete</span>
+                                    </button>
+                                    <button class="admin-btn regen-btn" data-id="{{ song.id }}">
+                                        <span class="material-symbols-outlined">refresh</span>
+                                    </button>
                                     {% endif %}
                                 </div>
-                            </div>
-                        </a>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tab Content: Zen Mode -->
-            <div id="tab-zen" class="tab-content">
-                <div id="zen-song-list-container" class="song-list-container">
-                    <div class="list-header"
-                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h2 style="margin: 0;">ZEN MODE</h2>
-                        <div class="list-controls" style="display: flex; align-items: center; gap: 10px;">
-
-                            <!-- Search Container -->
-                            <div class="search-container"
-                                style="display: flex; align-items: center; background: rgba(0,0,0,0.3); border-radius: 20px; padding: 5px 10px; transition: all 0.3s ease;">
-                                <span class="material-symbols-outlined search-icon"
-                                    style="cursor: pointer; opacity: 0.7;">search</span>
-                                <input type="text" id="zen-search" placeholder="Search..."
-                                    style="width: 0; padding: 0; border: none; background: transparent; color: white; transition: all 0.3s ease; opacity: 0;">
-                            </div>
-
-                            <!-- Sort Controls -->
-                            <div class="sort-container" style="display: flex; align-items: center; gap: 5px;">
-                                <select id="zen-sort"
-                                    style="padding: 5px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; font-size: 0.9em;">
-                                    <option value="title">Title</option>
-                                    <option value="bpm">BPM</option>
-                                    <option value="difficulty">Difficulty</option>
-                                </select>
-                                <button id="zen-sort-dir" class="sort-dir">
-                                    <span class="material-symbols-outlined"
-                                        style="font-size: 1.2em; opacity: 0.9;">arrow_downward</span>
-                                </button>
-                            </div>
-
-                        </div>
-                    </div>
-                    <div class="song-list" id="zen-song-list">
-                        {% for song in songs %}
-                        <a href="/zen_game/{{ song.id }}" class="song-card zen-card"
-                            data-title="{{ song.title | lower }}" data-bpm="{{ song.bpm }}"
-                            data-difficulty="{{ song.difficulty }}" data-version="{{ song.version }}"
-                            data-song-id="{{ song.id }}">
-                            <div class="thumbnail-container" style="position: relative; overflow: clip;">
-                                <img src="{{ song.thumbnail }}" alt="Thumbnail">
-                                {% if is_admin %}
-                                <button class="admin-btn delete-btn" data-id="{{ song.id }}">
-                                    <span class="material-symbols-outlined">delete</span>
-                                </button>
-                                <button class="admin-btn regen-btn" data-id="{{ song.id }}">
-                                    <span class="material-symbols-outlined">refresh</span>
-                                </button>
-                                {% endif %}
-                            </div>
-                            <div class="song-info">
-                                <div class="song-title">{{ song.title }}</div>
-                                <div class="song-duration">
-                                    <span class="duration-display" data-duration="{{ song.duration }}"></span> • {{
-                                    song.bpm
-                                    | int}} BPM
-                                    <span class="difficulty">
-                                        {% for i in range(song.difficulty | int) %}★{% endfor %}{% for i in range(5 -
-                                        (song.difficulty | int)) %}☆{% endfor %}
-                                    </span>
+                                <div class="song-info">
+                                    <div class="song-title">{{ song.title }}</div>
+                                    <div class="song-duration">
+                                        <span class="duration-display" data-duration="{{ song.duration }}"></span> • {{
+                                        song.bpm
+                                        | int}} BPM
+                                        <span class="difficulty">
+                                            {% for i in range(song.difficulty | int) %}★{% endfor %}{% for i in range(5
+                                            -
+                                            (song.difficulty | int)) %}☆{% endfor %}
+                                        </span>
+                                        {% if song.include_spaces %}
+                                        <span class="material-symbols-outlined song-property-icon"
+                                            title="Includes spaces">space_bar</span>
+                                        {% endif %}
+                                        {% if song.case_sensitive %}
+                                        <span class="material-symbols-outlined song-property-icon"
+                                            title="Case sensitive">match_case</span>
+                                        {% else %}
+                                        <span class="material-symbols-outlined song-property-icon"
+                                            title="Case insensitive">match_case_off</span>
+                                        {% endif %}
+                                    </div>
                                 </div>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Content: Zen Mode -->
+                <div id="tab-zen" class="tab-content">
+                    <div id="zen-song-list-container" class="song-list-container">
+                        <div class="list-header"
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h2 style="margin: 0;">ZEN MODE</h2>
+                            <div class="list-controls" style="display: flex; align-items: center; gap: 10px;">
+
+                                <!-- Search Container -->
+                                <div class="search-container"
+                                    style="display: flex; align-items: center; background: rgba(0,0,0,0.3); border-radius: 20px; padding: 5px 10px; transition: all 0.3s ease;">
+                                    <span class="material-symbols-outlined search-icon"
+                                        style="cursor: pointer; opacity: 0.7;">search</span>
+                                    <input type="text" id="zen-search" placeholder="Search..."
+                                        style="width: 0; padding: 0; border: none; background: transparent; color: white; transition: all 0.3s ease; opacity: 0;">
+                                </div>
+
+                                <!-- Sort Controls -->
+                                <div class="sort-container" style="display: flex; align-items: center; gap: 5px;">
+                                    <select id="zen-sort"
+                                        style="padding: 5px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; font-size: 0.9em;">
+                                        <option value="title">Title</option>
+                                        <option value="bpm">BPM</option>
+                                        <option value="difficulty">Difficulty</option>
+                                    </select>
+                                    <button id="zen-sort-dir" class="sort-dir">
+                                        <span class="material-symbols-outlined"
+                                            style="font-size: 1.2em; opacity: 0.9;">arrow_downward</span>
+                                    </button>
+                                </div>
+
                             </div>
-                        </a>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-
-
-            <!-- Tab Content: Settings -->
-            <div id="tab-settings" class="tab-content">
-                <div class="song-list-container">
-                    <div class="list-header" style="margin-bottom: 30px;">
-                        <h2 style="margin: 0;">SETTINGS</h2>
-                    </div>
-
-                    <!-- User Interface Settings -->
-                    <div style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 12px;"
-                        class="settings-screen">
-                        <h3 style="margin-top: 0; color: var(--secondary-glow);">User Interface</h3>
-
-                        <label for="keyboard-layout">Keyboard Layout:</label>
-                        <select id="keyboard-layout">
-                            <option value="QWERTY">QWERTY</option>
-                            <option value="QWERTZ">QWERTZ</option>
-                            <option value="AZERTY">AZERTY</option>
-                        </select>
-
-                        <label for="color-scheme" style="margin-top: 1rem;">Color Scheme:</label>
-                        <select id="color-scheme">
-                            <option value="default">Neon (Default)</option>
-                            <option value="sunset">Sunset</option>
-                            <option value="ocean">Ocean</option>
-                            <option value="matrix">Matrix</option>
-                        </select>
-
-                        <label for="font-style" style="margin-top: 1rem;">Font Style:</label>
-                        <select id="font-style">
-                            <option value="outfit">Modern (Default)</option>
-                            <option value="roboto">Monospace</option>
-                            <option value="pixel">Pixel</option>
-                            <option value="comic">Comic</option>
-                        </select>
-
-                        <div style="margin-top: 1rem; display: flex; align-items: center; gap: 10px;">
-                            <input type="checkbox" id="enable-visualizer" checked="checked" style="width: auto;">
-                            <label for="enable-visualizer" style="margin: 0; display: inline;">Enable Audio
-                                Visualizer</label>
                         </div>
-
-                        <div style="margin-top: 0.5rem; display: flex; align-items: center; gap: 10px;">
-                            <input type="checkbox" id="enable-timing-indicator" checked="checked" style="width: auto;">
-                            <label for="enable-timing-indicator" style="margin: 0; display: inline;">Enable Timing
-                                Indicator</label>
+                        <div class="song-list" id="zen-song-list">
+                            {% for song in songs %}
+                            <a href="/zen_game/{{ song.id }}" class="song-card zen-card"
+                                data-title="{{ song.title | lower }}" data-bpm="{{ song.bpm }}"
+                                data-difficulty="{{ song.difficulty }}" data-version="{{ song.version }}"
+                                data-song-id="{{ song.id }}">
+                                <div class="thumbnail-container" style="position: relative; overflow: clip;">
+                                    <img src="{{ song.thumbnail }}" alt="Thumbnail">
+                                    {% if is_admin %}
+                                    <button class="admin-btn delete-btn" data-id="{{ song.id }}">
+                                        <span class="material-symbols-outlined">delete</span>
+                                    </button>
+                                    <button class="admin-btn regen-btn" data-id="{{ song.id }}">
+                                        <span class="material-symbols-outlined">refresh</span>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                                <div class="song-info">
+                                    <div class="song-title">{{ song.title }}</div>
+                                    <div class="song-duration">
+                                        <span class="duration-display" data-duration="{{ song.duration }}"></span> • {{
+                                        song.bpm
+                                        | int}} BPM
+                                        <span class="difficulty">
+                                            {% for i in range(song.difficulty | int) %}★{% endfor %}{% for i in range(5
+                                            -
+                                            (song.difficulty | int)) %}☆{% endfor %}
+                                        </span>
+                                    </div>
+                                </div>
+                            </a>
+                            {% endfor %}
                         </div>
                     </div>
                 </div>
-            </div>
 
+
+                <!-- Tab Content: Settings -->
+                <div id="tab-settings" class="tab-content">
+                    <div class="song-list-container">
+                        <div class="list-header" style="margin-bottom: 30px;">
+                            <h2 style="margin: 0;">SETTINGS</h2>
+                        </div>
+
+                        <!-- User Interface Settings -->
+                        <div style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 12px;"
+                            class="settings-screen">
+                            <h3 style="margin-top: 0; color: var(--secondary-glow);">User Interface</h3>
+
+                            <label for="keyboard-layout">Keyboard Layout:</label>
+                            <select id="keyboard-layout">
+                                <option value="QWERTY">QWERTY</option>
+                                <option value="QWERTZ">QWERTZ</option>
+                                <option value="AZERTY">AZERTY</option>
+                            </select>
+
+                            <label for="color-scheme" style="margin-top: 1rem;">Color Scheme:</label>
+                            <select id="color-scheme">
+                                <option value="default">Neon (Default)</option>
+                                <option value="sunset">Sunset</option>
+                                <option value="ocean">Ocean</option>
+                                <option value="matrix">Matrix</option>
+                            </select>
+
+                            <label for="font-style" style="margin-top: 1rem;">Font Style:</label>
+                            <select id="font-style">
+                                <option value="outfit">Modern (Default)</option>
+                                <option value="roboto">Monospace</option>
+                                <option value="pixel">Pixel</option>
+                                <option value="comic">Comic</option>
+                            </select>
+
+                            <div style="margin-top: 1rem; display: flex; align-items: center; gap: 10px;">
+                                <input type="checkbox" id="enable-visualizer" checked="checked" style="width: auto;">
+                                <label for="enable-visualizer" style="margin: 0; display: inline;">Enable Audio
+                                    Visualizer</label>
+                            </div>
+
+                            <div style="margin-top: 0.5rem; display: flex; align-items: center; gap: 10px;">
+                                <input type="checkbox" id="enable-timing-indicator" checked="checked"
+                                    style="width: auto;">
+                                <label for="enable-timing-indicator" style="margin: 0; display: inline;">Enable Timing
+                                    Indicator</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
 
         <!-- Admin Login Modal -->

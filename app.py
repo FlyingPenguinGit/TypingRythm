@@ -7,6 +7,7 @@ from game_engine import generate_beat_map, generate_zen_text
 from lyrics_engine import get_lyrics, save_lyrics
 from models import db, Song
 from sqlalchemy.orm import defer
+from functools import lru_cache
 
 print("App is starting...")
 
@@ -58,7 +59,7 @@ def login_admin():
 
 @app.route('/game/<video_id>')
 def game(video_id):
-    song = Song.query.get_or_404(video_id)
+    song = Song.query.options(defer(Song.audio_file), defer(Song.beat_times), defer(Song.onset_times)).get_or_404(video_id)
     
     # Check if audio file exists in the database
     if not song.audio_file:
@@ -69,6 +70,7 @@ def game(video_id):
         # and potentially saves it to disk if that's still desired for caching
         # or it could be modified to directly return bytes for DB storage.
         # For this refactoring, we'll assume it returns bytes.
+        return "Audio not found", 404
         audio_content = download_audio_to_bytes(youtube_url) # Renamed to clarify
         
         if not audio_content:
@@ -90,7 +92,7 @@ def game(video_id):
 
 @app.route('/zen_game/<video_id>')
 def zen_game(video_id):
-    song = Song.query.get_or_404(video_id)
+    song = Song.query.options(defer(Song.beat_map), defer(Song.audio_file)).get_or_404(video_id)
     
     # Pass song data with beat/onset times - word generation happens in JS
     song_data = song.to_dict()
@@ -101,12 +103,63 @@ def zen_game(video_id):
     
     return render_template('zen_game.html', song_data=song_data)
 
+# Cache audio blobs in memory
+@lru_cache(maxsize=256)
+def load_audio_blob(video_id):
+    song = Song.query.options(
+        defer(Song.beat_map),
+        defer(Song.onset_times),
+        defer(Song.beat_times)
+    ).get(video_id)
+
+    if song and song.audio_file:
+        return song.audio_file
+    return None
+
+
 @app.route('/audio/<video_id>')
 def serve_audio(video_id):
-    song = Song.query.get_or_404(video_id)
-    if song.audio_file:
-        return Response(song.audio_file, mimetype="audio/mpeg")
-    return "Audio not found", 404
+
+    data = load_audio_blob(video_id)
+
+    if data is None:
+        return "Audio not found", 404
+
+    file_size = len(data)
+    range_header = request.headers.get('Range', None)
+
+    if range_header:
+        # "bytes=START-END"
+        byte1, byte2 = range_header.replace("bytes=", "").split("-")
+        start = int(byte1)
+        end = int(byte2) if byte2 else file_size - 1
+        end = min(end, file_size - 1)
+
+        chunk = data[start:end + 1]
+
+        rv = Response(
+            chunk,
+            status=206,
+            mimetype="audio/mpeg",
+            direct_passthrough=True
+        )
+
+        rv.headers.add("Content-Range", f"bytes {start}-{end}/{file_size}")
+        rv.headers.add("Accept-Ranges", "bytes")
+        rv.headers.add("Content-Length", str(len(chunk)))
+        return rv
+
+    # Full request (no Range)
+    rv = Response(
+        data,
+        status=200,
+        mimetype="audio/mpeg",
+        direct_passthrough=True
+    )
+    rv.headers.add("Accept-Ranges", "bytes")
+    rv.headers.add("Content-Length", str(file_size))
+    return rv
+
 
 @app.route('/delete_song/<video_id>', methods=['DELETE'])
 def delete_song(video_id):
@@ -117,7 +170,7 @@ def delete_song(video_id):
 
 @app.route('/regenerate_beatmap/<video_id>', methods=['POST'])
 def regenerate_beatmap(video_id):
-    song = Song.query.get_or_404(video_id)
+    song = Song.query.options(defer(Song.beat_map)).get_or_404(video_id)
     data = request.json or {}
     
     # Use provided preferences or defaults/stored
@@ -245,8 +298,22 @@ def process_song():
     
     # Prepare data for DB
     if not existing_song:
-        existing_song = Song(id=video_id)
-        db.session.add(existing_song)
+        # Read audio bytes
+        with open(file_path, "rb") as f:
+            audio_bytes = f.read()
+
+        # Optional: delete file after reading
+        try:
+            os.remove(file_path)
+        except:
+            pass
+
+        # Check if we already have this song in DB
+        existing_song = Song.query.get(video_id)
+        if not existing_song:
+            existing_song = Song(id=video_id)
+            existing_song.audio_file = audio_bytes
+            db.session.add(existing_song)
     
     existing_song.title = title if title else (existing_song.title if existing_song.title else f"Song {video_id}")
     existing_song.thumbnail_url = f"https://img.youtube.com/vi/{video_id}/0.jpg"
