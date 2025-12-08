@@ -1,23 +1,20 @@
-<!-- @format off -->
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Typing Rhythm - Game</title>
+    <title>Typing Rhythm - Zen Mode</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/zen_monotype.css') }}">
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Roboto+Mono:wght@400;700&family=Press+Start+2P&display=swap"
         rel="stylesheet">
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script>
         const SONG_DATA = {{ song_data | tojson }};
     </script>
-    <div id="game-config" data-practice="{{ practice_mode }}" data-speed="{{ speed }}"
-        data-start-time="{{ start_time }}" style="display:none;"></div>
 </head>
 
 <body>
@@ -50,7 +47,7 @@
             <!-- Game Over Stats Overlay -->
             <div id="game-over-overlay" class="game-over-overlay hidden">
                 <div class="game-over-content">
-                    <h2 id="game-over-title">GAME COMPLETE!</h2>
+                    <h2 id="game-over-title">ZEN COMPLETE!</h2>
                     <h3 id="game-over-song-title"></h3>
 
                     <div class="stats-grid">
@@ -67,8 +64,8 @@
                             <div class="stat-value" id="final-accuracy">0%</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-label">NOTES HIT</div>
-                            <div class="stat-value" id="notes-hit">0/0</div>
+                            <div class="stat-label">RHYTHM SCORE</div>
+                            <div class="stat-value" id="rhythm-score">0%</div>
                         </div>
                     </div>
 
@@ -89,76 +86,40 @@
                         <div class="label">SCORE</div>
                         <div class="value" id="score">0</div>
                     </div>
-                    <div class="combo-circle">
-                        <span id="combo">x0</span>
-                    </div>
                 </div>
 
                 <div class="accuracy-box">
-                    <div class="label">ACCURACY</div>
-                    <div class="value" id="accuracy">100%</div>
+                    <div class="label">RHYTHM</div>
+                    <div class="value" id="rhythm">100%</div>
                 </div>
 
                 <button id="pause-btn-top" class="pause-icon-btn"><span
                         class="material-symbols-outlined icon-move-down">pause</span></button>
             </div>
 
-            <div class="game-area horizontal">
-                {% if practice_mode %}
-                <div
-                    style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); color: var(--primary-glow); font-weight: bold; border: 1px solid var(--primary-glow); padding: 5px 10px; border-radius: 4px; z-index: 10;">
-                    PRACTICE MODE ({{ speed }}x speed)
+            <!-- Zen Game Area -->
+            <div class="zen-game-area">
+                <div class="zen-text-display">
+                    <div id="current-word" class="current-word"></div>
                 </div>
-                {% endif %}
-                <div class="track-container">
-                    <!-- Target Zone -->
-                    <div class="target-zone">
-                        <div class="target-indicator"></div>
-                        <div class="timing-indicator"></div>
-                    </div>
-
-                    <!-- Notes Container -->
-                    <div id="notes-layer"></div>
-
-                    <!-- Feedback Layer -->
-                    <div id="feedback-layer"></div>
-                </div>
+                <!-- Feedback Layer -->
+                <div id="feedback-layer"></div>
             </div>
 
             <div class="ui-bottom">
-                <div class="health-container">
-                    <div class="health-icon">
-                        <span>❤</span>
-                    </div>
-                    <div class="health-track">
-                        <div class="health-bar" id="health-bar"></div>
-                    </div>
-                </div>
                 <div class="song-info">
                     <div id="audio-visualizer"></div>
                     <div class="progress-bar-container">
                         <div id="progress-bar"></div>
                     </div>
                     <div id="song-title"></div>
-                    <div class="song-badges">
-                        <!-- Difficulty -->
-                        <div class="difficulty">
-                            {% for i in range(song_data.difficulty|int) %}★{% endfor %}
-                        </div>
-                        <!-- Properties -->
-                        {% if song_data.beat_map.case_sensitive %}
-                        <span class="material-symbols-outlined badge" title="Case Sensitive">match_case</span>
-                        {% endif %}
-                        {% if song_data.beat_map.include_spaces %}
-                        <span class="material-symbols-outlined badge" title="Includes Spaces">space_bar</span>
-                        {% endif %}
-                    </div>
+                    <div class="zen-mode-badge">ZEN MODE</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/zen_game.js') }}"></script>
 </body>
 
 </html>

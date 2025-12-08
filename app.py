@@ -3,7 +3,7 @@ import json
 from flask import Flask, render_template, request, jsonify, session
 from flask_socketio import SocketIO
 from audio_engine import download_audio, analyze_audio
-from game_engine import generate_beat_map
+from game_engine import generate_beat_map, generate_zen_text
 from lyrics_engine import get_lyrics, save_lyrics
 from models import db, Song
 from sqlalchemy.orm import defer
@@ -87,6 +87,19 @@ def game(video_id):
     # For large files, an endpoint is better.
     # Assuming song.to_dict() is updated to provide an audio_url pointing to /audio/<video_id>
     return render_template('game.html', song_data=song.to_dict(), practice_mode=practice_mode, speed=speed, start_time=start_time)
+
+@app.route('/zen_game/<video_id>')
+def zen_game(video_id):
+    song = Song.query.get_or_404(video_id)
+    
+    # Pass song data with beat/onset times - word generation happens in JS
+    song_data = song.to_dict()
+    
+    # Remove the pre-generated beatmap since we'll generate words dynamically in JS
+    if 'beat_map' in song_data:
+        del song_data['beat_map']
+    
+    return render_template('zen_game.html', song_data=song_data)
 
 @app.route('/audio/<video_id>')
 def serve_audio(video_id):

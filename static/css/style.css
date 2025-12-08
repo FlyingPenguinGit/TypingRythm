@@ -1,3 +1,5 @@
+@import url('tabs.css');
+
 :root {
     /* Default (Neon) */
     --bg-color: #0a0a12;
@@ -338,6 +340,25 @@ button:hover {
     border: 4px solid var(--secondary-glow);
     border-radius: 50%;
     box-shadow: 0 0 20px var(--secondary-glow), inset 0 0 20px var(--secondary-glow);
+}
+
+.timing-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+    border: 3px solid var(--primary-glow);
+    border-radius: 50%;
+    box-shadow: 0 0 15px var(--primary-glow);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.1s linear;
+}
+
+.timing-indicator.active {
+    opacity: 0.6;
 }
 
 
@@ -839,21 +860,6 @@ button:hover {
 }
 
 
-.settings-button {
-    position: absolute;
-    align-self: end;
-    top: 0;
-    right: 0;
-    margin: 2rem 2rem;
-    z-index: 10;
-}
-
-.settings-button:hover {
-    background: var(--primary-glow);
-    box-shadow: 0 0 20px var(--primary-glow);
-    transform: translateY(-2px);
-}
-
 .settings-screen select,
 .settings-screen input {
     padding: 1rem 2rem;
@@ -869,39 +875,16 @@ button:hover {
 .settings-screen {
     display: flex;
     flex-direction: column;
+    width: 100%;
+    max-width: 100%;
 }
 
 /* Advanced Section */
-.advanced-toggle {
-    margin: 1rem 0;
-}
-
-#advanced-btn {
-    background: rgba(0, 229, 255, 0.1);
-    border: 1px solid var(--secondary-glow);
-    color: var(--secondary-glow);
-    padding: 0.5rem 1.5rem;
-    font-size: 0.9rem;
-}
-
-#advanced-btn:hover {
-    background: rgba(0, 229, 255, 0.2);
-    box-shadow: 0 0 10px var(--secondary-glow);
-}
-
 .advanced-section {
-    position: absolute;
-    margin: 3rem 1.5rem;
-    padding: 1rem;
     background: rgba(0, 0, 0, 0.3);
-    border-radius: 8px;
-    border: 1px solid var(--secondary-glow);
-    align-self: baseline;
-    top: 0;
-    width: 18%;
-    height: 30%;
-    overflow-y: scroll;
-    scrollbar-width: thin;
+    padding: 20px;
+    border-radius: 12px;
+    margin-top: 20px;
 }
 
 .advanced-section label {
@@ -1470,6 +1453,7 @@ button:hover {
     text-align: center;
     z-index: 5;
     background: #000000b5;
+    border-radius: 0;
     border-top-left-radius: 20px;
     box-shadow: #000000c2 2px 2px 15px 7px;
 }
@@ -1613,7 +1597,7 @@ button:hover {
 }
 
 
-#params-sort-dir {
+.sort-dir {
     background: none;
     display: flex;
     align-items: center;
@@ -1626,7 +1610,131 @@ button:hover {
     transition: transform 0.1s;
 }
 
-#params-sort-dir:hover {
+.sort-dir:hover {
     transform: scale(1.05);
     box-shadow: none;
+}
+
+.zen-word-display {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.next-word-label {
+    font-size: 0.9rem;
+    color: var(--secondary-glow);
+    opacity: 0.7;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+.next-word {
+    font-size: 1.8rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 600;
+    min-height: 40px;
+    transition: all 0.3s ease;
+}
+
+.current-word {
+    font-size: 4rem;
+    font-weight: 900;
+    color: var(--primary-glow);
+    text-shadow: 0 0 30px var(--primary-glow);
+    letter-spacing: 5px;
+    min-height: 80px;
+    transition: all 0.3s ease;
+    animation: pulseGlow 2s ease-in-out infinite;
+}
+
+.typed-word {
+    font-size: 2rem;
+    color: var(--secondary-glow);
+    opacity: 0.8;
+    min-height: 50px;
+    letter-spacing: 2px;
+}
+
+.zen-mode-badge {
+    background: linear-gradient(135deg, var(--primary-glow), var(--secondary-glow));
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-top: 10px;
+    box-shadow: 0 0 15px rgba(255, 0, 85, 0.5);
+}
+
+@keyframes pulseGlow {
+
+    0%,
+    100% {
+        text-shadow: 0 0 30px var(--primary-glow);
+    }
+
+    50% {
+        text-shadow: 0 0 50px var(--primary-glow), 0 0 80px var(--secondary-glow);
+    }
+}
+
+.current-word.correct-letter {
+    animation: bounceIn 0.2s ease-out;
+}
+
+.current-word.wrong-letter {
+    animation: shake 0.3s ease-out;
+    color: #ff0055;
+    text-shadow: 0 0 30px #ff0055;
+}
+
+@keyframes bounceIn {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-10px);
+    }
+
+    75% {
+        transform: translateX(10px);
+    }
+}
+
+/* Zen Mode Fly-in Animation */
+.fly-in {
+    animation: flyInFromRight 0.5s ease-out;
+}
+
+@keyframes flyInFromRight {
+    0% {
+        transform: translateX(100px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }

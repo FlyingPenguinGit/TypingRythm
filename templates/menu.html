@@ -18,145 +18,249 @@
         <div id="menu-screen" class="screen active">
             <h1 class="game-title">Typing Rhythm</h1>
 
-            <div class="input-section">
-                <div class="input-group">
-                    <input type="text" id="youtube-url" placeholder="Paste YouTube URL here..." style="width: 55%;">
-                    <button id="process-btn">DOWNLOAD & PROCESS</button>
-                </div>
-
-                <div class="advanced-toggle">
-                    <button id="advanced-btn" type="button">
-                        <span class="material-symbols-outlined icon-move-down">settings</span>
-                        Advanced Options</button>
-                </div>
-
-                <div id="loading-status" class="hidden">Processing song...</div>
+            <!-- Tabs Navigation -->
+            <div class="tabs-container">
+                <button class="tab-btn active" data-tab="normal">Normal Mode</button>
+                <button class="tab-btn" data-tab="zen">Zen Mode</button>
+                <button class="tab-btn" data-tab="process">Processing</button>
+                <button class="tab-btn" data-tab="settings">Settings</button>
             </div>
 
-            <div id="advanced-section" class="advanced-section removed">
-                <label for="monotone-slider">Beatmap Monotony<br>(0 = Chaotic, 1 = Strict): <span
-                        id="monotone-value">0.5</span></label>
-                <input type="range" id="monotone-slider" min="0" max="1" step="0.01" value="0.5"
-                    style="width: 100%; padding: 0 0">
+            <!-- Tab Content: Processing -->
+            <div id="tab-process" class="tab-content">
+                <div class="input-section">
+                    <div class="input-group">
+                        <input type="text" id="youtube-url" placeholder="Paste YouTube URL here..." style="width: 55%;">
+                        <button id="process-btn">DOWNLOAD & PROCESS</button>
+                    </div>
 
-                <label for="custom-lyrics">Custom Lyrics (optional):</label>
-                <textarea id="custom-lyrics"
-                    placeholder="Paste your custom lyrics here...&#10;Leave empty to use automatic"></textarea>
-
-                <div style="margin-top: 1rem; display: flex; align-items: center; gap: 10px;">
-                    <input type="checkbox" id="case-sensitive" style="width: auto;">
-                    <label for="case-sensitive" style="margin: 0; display: inline;">Case Sensitive Mode</label>
+                    <div id="loading-status" class="hidden">Processing song...</div>
                 </div>
-                <div style="margin-top: 0.5rem; display: flex; align-items: center; gap: 10px;">
-                    <input type="checkbox" id="include-spaces" style="width: auto;" checked="checked">
-                    <label for="include-spaces" style="margin: 0; display: inline;">Include Spaces in Beatmap</label>
-                </div>
-            </div>
 
-            <div id="song-list-container" class="song-list-container">
-                <div class="list-header"
-                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h2 style="margin: 0;">PROCESSED SONGS</h2>
-                    <div class="list-controls" style="display: flex; align-items: center; gap: 10px;">
+                <!-- Advanced Generation Options -->
+                <div class="advanced-section">
+                    <h3 style="margin-top: 0; color: var(--primary-glow);">Advanced Song Generation</h3>
 
-                        <!-- Search Container -->
-                        <div class="search-container"
-                            style="display: flex; align-items: center; background: rgba(0,0,0,0.3); border-radius: 20px; padding: 5px 10px; transition: all 0.3s ease;">
-                            <span class="material-symbols-outlined search-icon"
-                                style="cursor: pointer; opacity: 0.7;">search</span>
-                            <input type="text" id="params-search" placeholder="Search..."
-                                style="width: 0; padding: 0; border: none; background: transparent; color: white; transition: all 0.3s ease; opacity: 0;">
-                        </div>
+                    <label for="monotone-slider">Beatmap Monotony<br>(0 = Chaotic, 1 = Strict): <span
+                            id="monotone-value">0.5</span></label>
+                    <input type="range" id="monotone-slider" min="0" max="1" step="0.01" value="0.5"
+                        style="width: 100%; padding: 0 0">
 
-                        <!-- Sort Controls -->
-                        <div class="sort-container" style="display: flex; align-items: center; gap: 5px;">
-                            <select id="params-sort"
-                                style="padding: 5px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; font-size: 0.9em;">
-                                <option value="title">Title</option>
-                                <option value="bpm">BPM</option>
-                                <option value="difficulty">Difficulty</option>
-                            </select>
-                            <button id="params-sort-dir">
-                                <span class="material-symbols-outlined"
-                                    style="font-size: 1.2em; opacity: 0.9;">arrow_downward</span>
-                            </button>
-                        </div>
+                    <label for="custom-lyrics">Custom Lyrics (optional):</label>
+                    <textarea id="custom-lyrics"
+                        placeholder="Paste your custom lyrics here...&#10;Leave empty to use automatic"></textarea>
 
+                    <div style="margin-top: 1rem; display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="case-sensitive" style="width: auto;">
+                        <label for="case-sensitive" style="margin: 0; display: inline;">Case Sensitive Mode</label>
+                    </div>
+                    <div style="margin-top: 0.5rem; display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="include-spaces" style="width: auto;" checked="checked">
+                        <label for="include-spaces" style="margin: 0; display: inline;">Include Spaces in
+                            Beatmap</label>
                     </div>
                 </div>
-                <div class="song-list" id="main-song-list">
-                    {% for song in songs %}
-                    <a href="/game/{{ song.id }}" class="song-card" data-title="{{ song.title | lower }}"
-                        data-bpm="{{ song.bpm }}" data-difficulty="{{ song.difficulty }}"
-                        data-version="{{ song.version }}">
-                        <div class="thumbnail-container" style="position: relative; overflow: clip;">
-                            <img src="{{ song.thumbnail }}" alt="Thumbnail">
-                            <button class="practice-btn" data-id="{{ song.id }}" data-duration="{{ song.duration }}">
-                                <span class="material-symbols-outlined">fitness_center</span>
-                            </button>
-                            {% if is_admin %}
-                            <button class="admin-btn delete-btn" data-id="{{ song.id }}">
-                                <span class="material-symbols-outlined">delete</span>
-                            </button>
-                            <button class="admin-btn regen-btn" data-id="{{ song.id }}">
-                                <span class="material-symbols-outlined">refresh</span>
-                            </button>
-                            {% endif %}
+            </div>
+
+            <!-- Tab Content: Normal Mode -->
+            <div id="tab-normal" class="tab-content active">
+                <div id="normal-song-list-container" class="song-list-container">
+                    <div class="list-header"
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 style="margin: 0;">NORMAL MODE</h2>
+                        <div class="list-controls" style="display: flex; align-items: center; gap: 10px;">
+
+                            <!-- Search Container -->
+                            <div class="search-container"
+                                style="display: flex; align-items: center; background: rgba(0,0,0,0.3); border-radius: 20px; padding: 5px 10px; transition: all 0.3s ease;">
+                                <span class="material-symbols-outlined search-icon"
+                                    style="cursor: pointer; opacity: 0.7;">search</span>
+                                <input type="text" id="normal-search" placeholder="Search..."
+                                    style="width: 0; padding: 0; border: none; background: transparent; color: white; transition: all 0.3s ease; opacity: 0;">
+                            </div>
+
+                            <!-- Sort Controls -->
+                            <div class="sort-container" style="display: flex; align-items: center; gap: 5px;">
+                                <select id="normal-sort"
+                                    style="padding: 5px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; font-size: 0.9em;">
+                                    <option value="title">Title</option>
+                                    <option value="bpm">BPM</option>
+                                    <option value="difficulty">Difficulty</option>
+                                </select>
+                                <button id="normal-sort-dir" class="sort-dir">
+                                    <span class="material-symbols-outlined"
+                                        style="font-size: 1.2em; opacity: 0.9;">arrow_downward</span>
+                                </button>
+                            </div>
+
                         </div>
-                        <div class="song-info">
-                            <div class="song-title">{{ song.title }}</div>
-                            <div class="song-duration">
-                                <span class="duration-display" data-duration="{{ song.duration }}"></span> • {{ song.bpm
-                                | int}} BPM
-                                <span class="difficulty">
-                                    {% for i in range(song.difficulty | int) %}★{% endfor %}{% for i in range(5 -
-                                    (song.difficulty | int)) %}☆{% endfor %}
-                                </span>
-                                {% if song.include_spaces %}
-                                <span class="material-symbols-outlined song-property-icon"
-                                    title="Includes spaces">space_bar</span>
-                                {% endif %}
-                                {% if song.case_sensitive %}
-                                <span class="material-symbols-outlined song-property-icon"
-                                    title="Case sensitive">match_case</span>
-                                {% else %}
-                                <span class="material-symbols-outlined song-property-icon"
-                                    title="Case insensitive">match_case_off</span>
+                    </div>
+                    <div class="song-list" id="normal-song-list">
+                        {% for song in songs %}
+                        <a href="/game/{{ song.id }}" class="song-card" data-title="{{ song.title | lower }}"
+                            data-bpm="{{ song.bpm }}" data-difficulty="{{ song.difficulty }}"
+                            data-version="{{ song.version }}">
+                            <div class="thumbnail-container" style="position: relative; overflow: clip;">
+                                <img src="{{ song.thumbnail }}" alt="Thumbnail">
+                                <button class="practice-btn" data-id="{{ song.id }}"
+                                    data-duration="{{ song.duration }}">
+                                    <span class="material-symbols-outlined">fitness_center</span>
+                                </button>
+                                {% if is_admin %}
+                                <button class="admin-btn delete-btn" data-id="{{ song.id }}">
+                                    <span class="material-symbols-outlined">delete</span>
+                                </button>
+                                <button class="admin-btn regen-btn" data-id="{{ song.id }}">
+                                    <span class="material-symbols-outlined">refresh</span>
+                                </button>
                                 {% endif %}
                             </div>
+                            <div class="song-info">
+                                <div class="song-title">{{ song.title }}</div>
+                                <div class="song-duration">
+                                    <span class="duration-display" data-duration="{{ song.duration }}"></span> • {{
+                                    song.bpm
+                                    | int}} BPM
+                                    <span class="difficulty">
+                                        {% for i in range(song.difficulty | int) %}★{% endfor %}{% for i in range(5 -
+                                        (song.difficulty | int)) %}☆{% endfor %}
+                                    </span>
+                                    {% if song.include_spaces %}
+                                    <span class="material-symbols-outlined song-property-icon"
+                                        title="Includes spaces">space_bar</span>
+                                    {% endif %}
+                                    {% if song.case_sensitive %}
+                                    <span class="material-symbols-outlined song-property-icon"
+                                        title="Case sensitive">match_case</span>
+                                    {% else %}
+                                    <span class="material-symbols-outlined song-property-icon"
+                                        title="Case insensitive">match_case_off</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Zen Mode -->
+            <div id="tab-zen" class="tab-content">
+                <div id="zen-song-list-container" class="song-list-container">
+                    <div class="list-header"
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 style="margin: 0;">ZEN MODE</h2>
+                        <div class="list-controls" style="display: flex; align-items: center; gap: 10px;">
+
+                            <!-- Search Container -->
+                            <div class="search-container"
+                                style="display: flex; align-items: center; background: rgba(0,0,0,0.3); border-radius: 20px; padding: 5px 10px; transition: all 0.3s ease;">
+                                <span class="material-symbols-outlined search-icon"
+                                    style="cursor: pointer; opacity: 0.7;">search</span>
+                                <input type="text" id="zen-search" placeholder="Search..."
+                                    style="width: 0; padding: 0; border: none; background: transparent; color: white; transition: all 0.3s ease; opacity: 0;">
+                            </div>
+
+                            <!-- Sort Controls -->
+                            <div class="sort-container" style="display: flex; align-items: center; gap: 5px;">
+                                <select id="zen-sort"
+                                    style="padding: 5px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; font-size: 0.9em;">
+                                    <option value="title">Title</option>
+                                    <option value="bpm">BPM</option>
+                                    <option value="difficulty">Difficulty</option>
+                                </select>
+                                <button id="zen-sort-dir" class="sort-dir">
+                                    <span class="material-symbols-outlined"
+                                        style="font-size: 1.2em; opacity: 0.9;">arrow_downward</span>
+                                </button>
+                            </div>
+
                         </div>
-                    </a>
-                    {% endfor %}
+                    </div>
+                    <div class="song-list" id="zen-song-list">
+                        {% for song in songs %}
+                        <a href="/zen_game/{{ song.id }}" class="song-card zen-card"
+                            data-title="{{ song.title | lower }}" data-bpm="{{ song.bpm }}"
+                            data-difficulty="{{ song.difficulty }}" data-version="{{ song.version }}"
+                            data-song-id="{{ song.id }}">
+                            <div class="thumbnail-container" style="position: relative; overflow: clip;">
+                                <img src="{{ song.thumbnail }}" alt="Thumbnail">
+                                {% if is_admin %}
+                                <button class="admin-btn delete-btn" data-id="{{ song.id }}">
+                                    <span class="material-symbols-outlined">delete</span>
+                                </button>
+                                <button class="admin-btn regen-btn" data-id="{{ song.id }}">
+                                    <span class="material-symbols-outlined">refresh</span>
+                                </button>
+                                {% endif %}
+                            </div>
+                            <div class="song-info">
+                                <div class="song-title">{{ song.title }}</div>
+                                <div class="song-duration">
+                                    <span class="duration-display" data-duration="{{ song.duration }}"></span> • {{
+                                    song.bpm
+                                    | int}} BPM
+                                    <span class="difficulty">
+                                        {% for i in range(song.difficulty | int) %}★{% endfor %}{% for i in range(5 -
+                                        (song.difficulty | int)) %}☆{% endfor %}
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
 
 
-            <div id="settings-screen" class="settings-screen removed">
-                <label for="keyboard-layout">Keyboard Layout:</label>
-                <select id="keyboard-layout">
-                    <option value="QWERTY">QWERTY</option>
-                    <option value="QWERTZ">QWERTZ</option>
-                    <option value="AZERTY">AZERTY</option>
-                </select>
+            <!-- Tab Content: Settings -->
+            <div id="tab-settings" class="tab-content">
+                <div class="song-list-container">
+                    <div class="list-header" style="margin-bottom: 30px;">
+                        <h2 style="margin: 0;">SETTINGS</h2>
+                    </div>
 
-                <label for="color-scheme" style="margin-top: 1rem;">Color Scheme:</label>
-                <select id="color-scheme">
-                    <option value="default">Neon (Default)</option>
-                    <option value="sunset">Sunset</option>
-                    <option value="ocean">Ocean</option>
-                    <option value="matrix">Matrix</option>
-                </select>
+                    <!-- User Interface Settings -->
+                    <div style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 12px;"
+                        class="settings-screen">
+                        <h3 style="margin-top: 0; color: var(--secondary-glow);">User Interface</h3>
 
-                <label for="font-style" style="margin-top: 1rem;">Font Style:</label>
-                <select id="font-style">
-                    <option value="outfit">Modern (Default)</option>
-                    <option value="roboto">Monospace</option>
-                    <option value="pixel">Pixel</option>
-                    <option value="comic">Comic</option>
-                </select>
+                        <label for="keyboard-layout">Keyboard Layout:</label>
+                        <select id="keyboard-layout">
+                            <option value="QWERTY">QWERTY</option>
+                            <option value="QWERTZ">QWERTZ</option>
+                            <option value="AZERTY">AZERTY</option>
+                        </select>
 
-                <label for="enable-visualizer" style="margin-top: 1rem; display: inline;">Enable Visualizer:</label>
-                <input type="checkbox" id="enable-visualizer" checked="checked">
+                        <label for="color-scheme" style="margin-top: 1rem;">Color Scheme:</label>
+                        <select id="color-scheme">
+                            <option value="default">Neon (Default)</option>
+                            <option value="sunset">Sunset</option>
+                            <option value="ocean">Ocean</option>
+                            <option value="matrix">Matrix</option>
+                        </select>
+
+                        <label for="font-style" style="margin-top: 1rem;">Font Style:</label>
+                        <select id="font-style">
+                            <option value="outfit">Modern (Default)</option>
+                            <option value="roboto">Monospace</option>
+                            <option value="pixel">Pixel</option>
+                            <option value="comic">Comic</option>
+                        </select>
+
+                        <div style="margin-top: 1rem; display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" id="enable-visualizer" checked="checked" style="width: auto;">
+                            <label for="enable-visualizer" style="margin: 0; display: inline;">Enable Audio
+                                Visualizer</label>
+                        </div>
+
+                        <div style="margin-top: 0.5rem; display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" id="enable-timing-indicator" checked="checked" style="width: auto;">
+                            <label for="enable-timing-indicator" style="margin: 0; display: inline;">Enable Timing
+                                Indicator</label>
+                        </div>
+                    </div>
+                </div>
             </div>
 
         </div>
@@ -188,8 +292,8 @@
                 </h2>
 
                 <div class="input-group" style="margin-bottom: 1.5rem; display: block;">
-                    <label for="practice-speed" style="display: block; margin-bottom: 0.5rem;">Playback Speed: <span
-                            id="practice-speed-val">1.0</span>x</label>
+                    <label for="practice-speed" style="display: block; margin-bottom: 0.5rem;">Playback Speed:
+                        <span id="practice-speed-val">1.0</span>x</label>
                     <input type="range" id="practice-speed" min="0.5" max="2.0" step="0.05" value="1.0"
                         style="width: 100%;">
                 </div>
@@ -208,32 +312,25 @@
                 </div>
             </div>
         </div>
-
-        <div id="settings-button" class="settings-button">
-            <button id="settings-btn" type="button">
-                <span class="material-symbols-outlined">settings</span>
-            </button>
-        </div>
     </div>
 
     <script>
-        // Advanced Toggle
-        const advancedBtn = document.getElementById('advanced-btn');
-        const advancedSection = document.getElementById('advanced-section');
+        // Tab Switching
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
 
-        advancedBtn.addEventListener('click', () => {
-            advancedSection.classList.toggle('removed');
-        });
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetTab = btn.dataset.tab;
 
+                // Remove active from all
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
 
-        // Settings Toggle
-        const settingsBtn = document.getElementById('settings-btn');
-        const settingsSection = document.getElementById('settings-screen');
-        const songlistSection = document.getElementById('song-list-container');
-
-        settingsBtn.addEventListener('click', () => {
-            settingsSection.classList.toggle('removed');
-            songlistSection.classList.toggle('removed');
+                // Add active to clicked
+                btn.classList.add('active');
+                document.getElementById(`tab-${targetTab}`).classList.add('active');
+            });
         });
 
         // Monotone Slider
@@ -283,6 +380,16 @@
         visualizerCheckbox.addEventListener('change', (e) => {
             const value = e.target.checked;
             localStorage.setItem('visualizerEnabled', value);
+        });
+
+        // Enable Timing Indicator
+        const timingIndicatorCheckbox = document.getElementById('enable-timing-indicator');
+        const savedTimingIndicator = localStorage.getItem('timingIndicatorEnabled') || 'true';
+        timingIndicatorCheckbox.checked = savedTimingIndicator === 'true' ? 'checked' : '';
+
+        timingIndicatorCheckbox.addEventListener('change', (e) => {
+            const value = e.target.checked;
+            localStorage.setItem('timingIndicatorEnabled', value);
         });
 
         function updateBodyClasses() {
@@ -423,6 +530,7 @@
 
         // Load Scores from LocalStorage
         document.addEventListener('DOMContentLoaded', () => {
+            // Normal Mode Scores
             const storageKey = 'typing_rhythm_scores';
             let scores = {};
             try {
@@ -434,7 +542,7 @@
                 console.error("Failed to parse scores:", e);
             }
 
-            const songCards = document.querySelectorAll('.song-card');
+            const songCards = document.querySelectorAll('#normal-song-list .song-card');
             songCards.forEach(card => {
                 const href = card.getAttribute('href');
                 const videoId = href.split('/').pop();
@@ -461,208 +569,280 @@
                     }
                 }
             });
+
+            // Zen Mode Scores
+            const zenStorageKey = 'typing_rhythm_zen_scores';
+            let zenScores = {};
+            try {
+                const stored = localStorage.getItem(zenStorageKey);
+                if (stored) {
+                    zenScores = JSON.parse(stored);
+                }
+            } catch (e) {
+                console.error("Failed to parse zen scores:", e);
+            }
+
+            const zenSongCards = document.querySelectorAll('#zen-song-list .song-card');
+            zenSongCards.forEach(card => {
+                const href = card.getAttribute('href');
+                const videoId = href.split('/').pop();
+
+                if (zenScores[videoId]) {
+                    const scoreData = zenScores[videoId];
+                    const imgContainer = card.querySelector('.thumbnail-container');
+                    const songVersion = parseInt(card.dataset.version) || 1;
+
+                    // Version Check
+                    if ((scoreData.version || 1) !== songVersion) {
+                        delete zenScores[videoId];
+                        localStorage.setItem(zenStorageKey, JSON.stringify(zenScores));
+                    } else if (imgContainer && scoreData.grade) {
+                        const badge = document.createElement('div');
+                        badge.className = `grade-badge grade-${scoreData.grade.toLowerCase()}`;
+                        badge.innerHTML = `
+                            <div class="grade-container">
+                                <div class="grade-letter">${scoreData.grade}</div>
+                                <div class="high-score">${scoreData.score}</div>
+                            </div>
+                        `;
+                        imgContainer.appendChild(badge);
+                    }
+                }
+            });
         });
 
-        // Search and Sort Logic
-        const searchInput = document.getElementById('params-search');
-        const sortSelect = document.getElementById('params-sort');
-        const sortDirBtn = document.getElementById('params-sort-dir');
-        const songList = document.getElementById('main-song-list');
-        let sortAsc = true;
+        // Search and Sort Logic - Normal Mode
+        const normalSearchInput = document.getElementById('normal-search');
+        const normalSortSelect = document.getElementById('normal-sort');
+        const normalSortDirBtn = document.getElementById('normal-sort-dir');
+        const normalSongList = document.getElementById('normal-song-list');
+        let normalSortAsc = true;
 
-        function filterAndSort() {
-            const query = searchInput.value.toLowerCase();
-            const sortKey = sortSelect.value;
-            const cards = Array.from(songList.getElementsByClassName('song-card'));
+        function filterAndSortNormal() {
+            if (!normalSearchInput || !normalSongList) return;
+            const query = normalSearchInput.value.toLowerCase();
+            const sortKey = normalSortSelect.value;
+            const cards = Array.from(normalSongList.getElementsByClassName('song-card'));
 
-            // 1. Filter
             cards.forEach(card => {
                 const title = card.dataset.title || '';
-                if (title.includes(query)) {
-                    card.style.display = '';
-                } else {
-                    card.style.display = 'none';
-                }
+                card.style.display = title.includes(query) ? '' : 'none';
             });
 
-            // 2. Sort
             cards.sort((a, b) => {
-                let valA, valB;
-
                 if (sortKey === 'title') {
-                    valA = a.dataset.title || '';
-                    valB = b.dataset.title || '';
-                    if (valA < valB) return sortAsc ? -1 : 1;
-                    if (valA > valB) return sortAsc ? 1 : -1;
+                    const valA = a.dataset.title || '';
+                    const valB = b.dataset.title || '';
+                    if (valA < valB) return normalSortAsc ? -1 : 1;
+                    if (valA > valB) return normalSortAsc ? 1 : -1;
                     return 0;
                 } else {
-                    // Numeric sort
-                    valA = parseFloat(a.dataset[sortKey]) || 0;
-                    valB = parseFloat(b.dataset[sortKey]) || 0;
-                    return sortAsc ? (valA - valB) : (valB - valA);
+                    const valA = parseFloat(a.dataset[sortKey]) || 0;
+                    const valB = parseFloat(b.dataset[sortKey]) || 0;
+                    return normalSortAsc ? (valA - valB) : (valB - valA);
                 }
             });
 
-            // Re-append
-            cards.forEach(card => songList.appendChild(card));
-
-            // Save state
-            localStorage.setItem('menuSearchQuery', query);
-            localStorage.setItem('menuSortKey', sortKey);
-            localStorage.setItem('menuSortAsc', sortAsc);
+            cards.forEach(card => normalSongList.appendChild(card));
         }
 
-        if (searchInput && sortSelect && sortDirBtn) {
-            searchInput.addEventListener('input', filterAndSort);
-            sortSelect.addEventListener('change', filterAndSort);
+        if (normalSearchInput && normalSortSelect && normalSortDirBtn) {
+            normalSearchInput.addEventListener('input', filterAndSortNormal);
+            normalSortSelect.addEventListener('change', filterAndSortNormal);
 
-            sortDirBtn.addEventListener('click', () => {
-                sortAsc = !sortAsc;
-                sortDirBtn.querySelector('span').innerText = sortAsc ? 'arrow_downward' : 'arrow_upward';
-                filterAndSort();
+            normalSortDirBtn.addEventListener('click', () => {
+                normalSortAsc = !normalSortAsc;
+                normalSortDirBtn.querySelector('span').innerText = normalSortAsc ? 'arrow_downward' : 'arrow_upward';
+                filterAndSortNormal();
             });
 
-            // Expandable Search Logic
-            const searchIcon = document.querySelector('.search-icon');
-            let isExpanded = false;
+            // Expandable Search
+            const normalSearchIcon = document.querySelector('#tab-normal .search-icon');
+            let normalExpanded = false;
 
-            // Load saved state
-            const savedQuery = localStorage.getItem('menuSearchQuery');
-            const savedSortKey = localStorage.getItem('menuSortKey');
-            const savedSortAsc = localStorage.getItem('menuSortAsc');
-
-            if (savedQuery) {
-                searchInput.value = savedQuery;
-                // Auto-expand if there's a query
-                isExpanded = true;
-                change_search_input(true);
-            }
-
-            if (savedSortKey) {
-                sortSelect.value = savedSortKey;
-            }
-
-            if (savedSortAsc !== null) {
-                sortAsc = savedSortAsc === 'true';
-                sortDirBtn.querySelector('span').innerText = sortAsc ? 'arrow_downward' : 'arrow_upward';
-            }
-
-            // Apply filters immediately if specific styles loaded
-            if (savedQuery || savedSortKey) {
-                filterAndSort();
-            }
-
-            if (searchIcon) {
-                searchIcon.addEventListener('click', () => {
-                    isExpanded = !isExpanded;
-                    if (isExpanded) {
-                        change_search_input(true);
+            if (normalSearchIcon) {
+                normalSearchIcon.addEventListener('click', () => {
+                    normalExpanded = !normalExpanded;
+                    if (normalExpanded) {
+                        normalSearchInput.style.width = '200px';
+                        normalSearchInput.style.padding = '5px';
+                        normalSearchInput.style.opacity = '1';
+                        normalSearchInput.style.pointerEvents = 'auto';
+                        normalSearchInput.focus();
                     } else {
-                        change_search_input(false);
+                        normalSearchInput.style.width = '0';
+                        normalSearchInput.style.padding = '0';
+                        normalSearchInput.style.opacity = '0';
+                        normalSearchInput.style.pointerEvents = 'none';
                     }
                 });
             }
 
-            // Auto-close if empty on blur
-            searchInput.addEventListener('blur', () => {
-                if (searchInput.value === '' && isExpanded) {
-                    isExpanded = false;
-                    change_search_input(false);
+            normalSearchInput.addEventListener('blur', () => {
+                if (normalSearchInput.value === '' && normalExpanded) {
+                    normalExpanded = false;
+                    normalSearchInput.style.width = '0';
+                    normalSearchInput.style.padding = '0';
+                    normalSearchInput.style.opacity = '0';
+                    normalSearchInput.style.pointerEvents = 'none';
+                }
+            });
+        }
+
+        // Search and Sort Logic - Zen Mode
+        const zenSearchInput = document.getElementById('zen-search');
+        const zenSortSelect = document.getElementById('zen-sort');
+        const zenSortDirBtn = document.getElementById('zen-sort-dir');
+        const zenSongList = document.getElementById('zen-song-list');
+        let zenSortAsc = true;
+
+        function filterAndSortZen() {
+            if (!zenSearchInput || !zenSongList) return;
+            const query = zenSearchInput.value.toLowerCase();
+            const sortKey = zenSortSelect.value;
+            const cards = Array.from(zenSongList.getElementsByClassName('song-card'));
+
+            cards.forEach(card => {
+                const title = card.dataset.title || '';
+                card.style.display = title.includes(query) ? '' : 'none';
+            });
+
+            cards.sort((a, b) => {
+                if (sortKey === 'title') {
+                    const valA = a.dataset.title || '';
+                    const valB = b.dataset.title || '';
+                    if (valA < valB) return zenSortAsc ? -1 : 1;
+                    if (valA > valB) return zenSortAsc ? 1 : -1;
+                    return 0;
+                } else {
+                    const valA = parseFloat(a.dataset[sortKey]) || 0;
+                    const valB = parseFloat(b.dataset[sortKey]) || 0;
+                    return zenSortAsc ? (valA - valB) : (valB - valA);
                 }
             });
 
-            // Practice Mode Logic
-            const practiceModal = document.getElementById('practice-modal');
-            const practiceSpeedSlider = document.getElementById('practice-speed');
-            const practiceStartSlider = document.getElementById('practice-start');
-            const practiceSpeedVal = document.getElementById('practice-speed-val');
-            const practiceStartVal = document.getElementById('practice-start-val');
-            const practiceStartBtn = document.getElementById('practice-start-btn');
-            const practiceCancelBtn = document.getElementById('practice-cancel-btn');
-            let currentPracticeId = null;
-
-            // Open Modal
-            document.querySelectorAll('.practice-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const id = btn.dataset.id;
-                    const duration = parseFloat(btn.dataset.duration);
-
-                    currentPracticeId = id;
-                    practiceStartSlider.max = Math.floor(duration);
-                    practiceStartSlider.value = 0;
-                    practiceSpeedSlider.value = 1.0;
-
-                    practiceSpeedVal.innerText = "1.0";
-                    practiceStartVal.innerText = "0";
-
-                    practiceModal.classList.remove('hidden');
-                });
-            });
-
-            // Close Modal
-            practiceCancelBtn.addEventListener('click', () => {
-                practiceModal.classList.add('hidden');
-                currentPracticeId = null;
-            });
-
-            // Sliders
-            practiceSpeedSlider.addEventListener('input', (e) => practiceSpeedVal.innerText = e.target.value);
-            practiceStartSlider.addEventListener('input', (e) => practiceStartVal.innerText = e.target.value);
-
-            // Start Game
-            practiceStartBtn.addEventListener('click', () => {
-                if (!currentPracticeId) return;
-                const speed = practiceSpeedSlider.value;
-                const start = practiceStartSlider.value;
-                window.location.href = `/game/${currentPracticeId}?practice=true&speed=${speed}&start=${start}`;
-            });
-
-            // Admin Login Logic
-            const adminLoginBtn = document.getElementById('admin-login-btn');
-            const adminPasswordInput = document.getElementById('admin-password');
-
-            if (adminLoginBtn) {
-                const submitLogin = async () => {
-                    const password = adminPasswordInput.value;
-                    try {
-                        const res = await fetch('/login_admin', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ password })
-                        });
-                        const data = await res.json();
-                        if (data.status === 'success') {
-                            window.location.reload();
-                        } else {
-                            alert('Incorrect Password');
-                        }
-                    } catch (e) {
-                        alert('Login error');
-                    }
-                };
-
-                adminLoginBtn.addEventListener('click', submitLogin);
-                adminPasswordInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') submitLogin();
-                });
-            }
+            cards.forEach(card => zenSongList.appendChild(card));
         }
 
-        function change_search_input(isOpen) {
-            if (isOpen) {
-                searchInput.style.width = '200px';
-                searchInput.style.padding = '5px';
-                searchInput.style.opacity = '1';
-                searchInput.style.pointerEvents = 'auto';
-                searchInput.focus();
-            } else {
-                searchInput.style.width = '0';
-                searchInput.style.padding = '0';
-                searchInput.style.opacity = '0';
-                searchInput.style.pointerEvents = 'none';
+        if (zenSearchInput && zenSortSelect && zenSortDirBtn) {
+            zenSearchInput.addEventListener('input', filterAndSortZen);
+            zenSortSelect.addEventListener('change', filterAndSortZen);
+
+            zenSortDirBtn.addEventListener('click', () => {
+                zenSortAsc = !zenSortAsc;
+                zenSortDirBtn.querySelector('span').innerText = zenSortAsc ? 'arrow_downward' : 'arrow_upward';
+                filterAndSortZen();
+            });
+
+            // Expandable Search
+            const zenSearchIcon = document.querySelector('#tab-zen .search-icon');
+            let zenExpanded = false;
+
+            if (zenSearchIcon) {
+                zenSearchIcon.addEventListener('click', () => {
+                    zenExpanded = !zenExpanded;
+                    if (zenExpanded) {
+                        zenSearchInput.style.width = '200px';
+                        zenSearchInput.style.padding = '5px';
+                        zenSearchInput.style.opacity = '1';
+                        zenSearchInput.style.pointerEvents = 'auto';
+                        zenSearchInput.focus();
+                    } else {
+                        zenSearchInput.style.width = '0';
+                        zenSearchInput.style.padding = '0';
+                        zenSearchInput.style.opacity = '0';
+                        zenSearchInput.style.pointerEvents = 'none';
+                    }
+                });
             }
+
+            zenSearchInput.addEventListener('blur', () => {
+                if (zenSearchInput.value === '' && zenExpanded) {
+                    zenExpanded = false;
+                    zenSearchInput.style.width = '0';
+                    zenSearchInput.style.padding = '0';
+                    zenSearchInput.style.opacity = '0';
+                    zenSearchInput.style.pointerEvents = 'none';
+                }
+            });
+        }
+
+        // Practice Mode Logic
+        const practiceModal = document.getElementById('practice-modal');
+        const practiceSpeedSlider = document.getElementById('practice-speed');
+        const practiceStartSlider = document.getElementById('practice-start');
+        const practiceSpeedVal = document.getElementById('practice-speed-val');
+        const practiceStartVal = document.getElementById('practice-start-val');
+        const practiceStartBtn = document.getElementById('practice-start-btn');
+        const practiceCancelBtn = document.getElementById('practice-cancel-btn');
+        let currentPracticeId = null;
+
+        // Open Modal
+        document.querySelectorAll('.practice-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const id = btn.dataset.id;
+                const duration = parseFloat(btn.dataset.duration);
+
+                currentPracticeId = id;
+                practiceStartSlider.max = Math.floor(duration);
+                practiceStartSlider.value = 0;
+                practiceSpeedSlider.value = 1.0;
+
+                practiceSpeedVal.innerText = "1.0";
+                practiceStartVal.innerText = "0";
+
+                practiceModal.classList.remove('hidden');
+            });
+        });
+
+        // Close Modal
+        practiceCancelBtn.addEventListener('click', () => {
+            practiceModal.classList.add('hidden');
+            currentPracticeId = null;
+        });
+
+        // Sliders
+        practiceSpeedSlider.addEventListener('input', (e) => practiceSpeedVal.innerText = e.target.value);
+        practiceStartSlider.addEventListener('input', (e) => practiceStartVal.innerText = e.target.value);
+
+        // Start Game
+        practiceStartBtn.addEventListener('click', () => {
+            if (!currentPracticeId) return;
+            const speed = practiceSpeedSlider.value;
+            const start = practiceStartSlider.value;
+            window.location.href = `/game/${currentPracticeId}?practice=true&speed=${speed}&start=${start}`;
+        });
+
+        // Admin Login Logic
+        const adminLoginBtn = document.getElementById('admin-login-btn');
+        const adminPasswordInput = document.getElementById('admin-password');
+
+        if (adminLoginBtn) {
+            const submitLogin = async () => {
+                const password = adminPasswordInput.value;
+                try {
+                    const res = await fetch('/login_admin', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ password })
+                    });
+                    const data = await res.json();
+                    if (data.status === 'success') {
+                        window.location.reload();
+                    } else {
+                        alert('Incorrect Password');
+                    }
+                } catch (e) {
+                    alert('Login error');
+                }
+            };
+
+            adminLoginBtn.addEventListener('click', submitLogin);
+            adminPasswordInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') submitLogin();
+            });
         }
     </script>
 </body>

@@ -34,6 +34,9 @@ class Game {
         const visualizerValue = localStorage.getItem('visualizerEnabled') || 'true';
         this.visualizerEnabled = visualizerValue === 'true';
 
+        const timingIndicatorValue = localStorage.getItem('timingIndicatorEnabled') || 'true';
+        this.timingIndicatorEnabled = timingIndicatorValue === 'true';
+
         // Horizontal settings
         this.travelTime = 3000;
         this.hitWindow = 200; // Increased from 150ms for more forgiveness
@@ -52,6 +55,7 @@ class Game {
         this.progressBar = document.getElementById('progress-bar');
         this.songTitleEl = document.getElementById('song-title');
         this.gameOverSongTitleEl = document.getElementById('game-over-song-title');
+        this.timingIndicator = document.querySelector('.timing-indicator');
 
         this.totalNotes = 0;
         this.hitNotes = 0;
@@ -303,6 +307,11 @@ class Game {
             }
         });
 
+
+        // Find the next upcoming note for timing indicator
+        let nextNote = null;
+        let minTimeUntilHit = Infinity;
+
         this.activeNotes.forEach((note) => {
             if (note.hit) return;
 
@@ -313,6 +322,12 @@ class Game {
 
             const progress = 1 - (timeUntilHit / this.travelTime);
             const currentX = startX - (startX - endX) * progress;
+
+            // Track the closest upcoming note
+            if (timeUntilHit > -this.hitWindow && timeUntilHit < minTimeUntilHit) {
+                nextNote = note;
+                minTimeUntilHit = timeUntilHit;
+            }
 
             if (note.element) {
                 note.element.style.left = `${currentX}px`;
@@ -327,6 +342,32 @@ class Game {
                 }
             }
         });
+
+        // Update timing indicator
+        if (this.timingIndicator && this.timingIndicatorEnabled) {
+            // Only show the indicator during the last 1000ms (1 second) of travel for quicker animation
+            const showWindow = 1000;
+
+            if (nextNote && minTimeUntilHit <= showWindow && minTimeUntilHit > -this.hitWindow) {
+                // Show indicator and scale it based on time until hit
+                this.timingIndicator.classList.add('active');
+
+                // Scale from 200px to 80px (target indicator size)
+                const maxSize = 200;
+                const minSize = 80;
+                const sizeRange = maxSize - minSize;
+
+                // Progress from 0 (far) to 1 (at target)
+                const timingProgress = Math.max(0, Math.min(1, 1 - (minTimeUntilHit / showWindow)));
+                const currentSize = maxSize - (sizeRange * timingProgress);
+
+                this.timingIndicator.style.width = `${currentSize}px`;
+                this.timingIndicator.style.height = `${currentSize}px`;
+            } else {
+                // Hide indicator when no notes are close
+                this.timingIndicator.classList.remove('active');
+            }
+        }
 
         this.activeNotes = this.activeNotes.filter(n => n.element !== null || (n.hit && n.element));
 
