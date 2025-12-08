@@ -23,6 +23,9 @@ class Game {
         this.activeNotes = [];
         this.startTime = 0;
 
+        this.lastNoteTime = 0;
+        this.isFadingOut = false;
+
         // Apply settings
         const scheme = localStorage.getItem('colorScheme') || 'default';
         const font = localStorage.getItem('fontStyle') || 'outfit';
@@ -209,6 +212,11 @@ class Game {
             element: null
         }));
 
+        if (this.notes.length > 0) {
+            // Find the last note time (assuming sorted, but being safe)
+            this.lastNoteTime = this.notes.reduce((max, n) => Math.max(max, n.time), 0);
+        }
+
         // Practice Mode: Skip notes before start time
         if (typeof GAME_CONFIG !== 'undefined' && GAME_CONFIG.startTime > 0) {
             const skipTime = GAME_CONFIG.startTime * 1000;
@@ -326,6 +334,20 @@ class Game {
             requestAnimationFrame(() => this.loop());
         } else if (this.audio.ended) {
             this.endGame();
+        }
+
+        // Early fade out check
+        if (!this.isFadingOut && !this.gameOver && this.lastNoteTime > 0 && this.audio.duration && this.isPlaying) {
+            const lastNoteSec = this.lastNoteTime / 1000;
+            const timeSinceLastNote = syncTime - this.lastNoteTime;
+
+            // If song ends more than 5s after last note
+            if ((this.audio.duration - lastNoteSec) > 5.0) {
+                // Buffer of 2 seconds after last note
+                if (timeSinceLastNote > 2000) {
+                    this.fadeOutAndEnd();
+                }
+            }
         }
     }
 
@@ -543,6 +565,26 @@ class Game {
             const accuracy = Math.floor((this.hitNotes / (this.hitNotes + this.missedNotes)) * 100);
             if (this.accuracyEl) this.accuracyEl.innerText = `${accuracy}%`;
         }
+    }
+
+    fadeOutAndEnd() {
+        console.log("Fading out...");
+        this.isFadingOut = true;
+        const fadeDuration = 2000; // 2 seconds fade
+        const startVolume = this.audio.volume;
+        const steps = 20;
+        const intervalTime = fadeDuration / steps;
+        const volStep = startVolume / steps;
+
+        const fadeInterval = setInterval(() => {
+            if (this.audio.volume > volStep) {
+                this.audio.volume -= volStep;
+            } else {
+                this.audio.volume = 0;
+                clearInterval(fadeInterval);
+                this.endGame(false);
+            }
+        }, intervalTime);
     }
 
     endGame(failed = false) {

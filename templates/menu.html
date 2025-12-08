@@ -505,6 +505,11 @@
 
             // Re-append
             cards.forEach(card => songList.appendChild(card));
+
+            // Save state
+            localStorage.setItem('menuSearchQuery', query);
+            localStorage.setItem('menuSortKey', sortKey);
+            localStorage.setItem('menuSortAsc', sortAsc);
         }
 
         if (searchInput && sortSelect && sortDirBtn) {
@@ -521,22 +526,39 @@
             const searchIcon = document.querySelector('.search-icon');
             let isExpanded = false;
 
+            // Load saved state
+            const savedQuery = localStorage.getItem('menuSearchQuery');
+            const savedSortKey = localStorage.getItem('menuSortKey');
+            const savedSortAsc = localStorage.getItem('menuSortAsc');
+
+            if (savedQuery) {
+                searchInput.value = savedQuery;
+                // Auto-expand if there's a query
+                isExpanded = true;
+                change_search_input(true);
+            }
+
+            if (savedSortKey) {
+                sortSelect.value = savedSortKey;
+            }
+
+            if (savedSortAsc !== null) {
+                sortAsc = savedSortAsc === 'true';
+                sortDirBtn.querySelector('span').innerText = sortAsc ? 'arrow_downward' : 'arrow_upward';
+            }
+
+            // Apply filters immediately if specific styles loaded
+            if (savedQuery || savedSortKey) {
+                filterAndSort();
+            }
+
             if (searchIcon) {
                 searchIcon.addEventListener('click', () => {
                     isExpanded = !isExpanded;
                     if (isExpanded) {
-                        searchInput.style.width = '200px';
-                        searchInput.style.padding = '5px';
-                        searchInput.style.opacity = '1';
-                        searchInput.style.pointerEvents = 'auto'; // ensure expanding enables interaction if needed
-                        searchInput.focus();
+                        change_search_input(true);
                     } else {
-                        searchInput.style.width = '0';
-                        searchInput.style.padding = '0';
-                        searchInput.style.opacity = '0';
-                        // Optional: Clear search on close
-                        // searchInput.value = ''; 
-                        // filterAndSort(); 
+                        change_search_input(false);
                     }
                 });
             }
@@ -545,9 +567,7 @@
             searchInput.addEventListener('blur', () => {
                 if (searchInput.value === '' && isExpanded) {
                     isExpanded = false;
-                    searchInput.style.width = '0';
-                    searchInput.style.padding = '0';
-                    searchInput.style.opacity = '0';
+                    change_search_input(false);
                 }
             });
 
@@ -627,6 +647,21 @@
                 adminPasswordInput.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') submitLogin();
                 });
+            }
+        }
+
+        function change_search_input(isOpen) {
+            if (isOpen) {
+                searchInput.style.width = '200px';
+                searchInput.style.padding = '5px';
+                searchInput.style.opacity = '1';
+                searchInput.style.pointerEvents = 'auto';
+                searchInput.focus();
+            } else {
+                searchInput.style.width = '0';
+                searchInput.style.padding = '0';
+                searchInput.style.opacity = '0';
+                searchInput.style.pointerEvents = 'none';
             }
         }
     </script>

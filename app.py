@@ -42,7 +42,7 @@ def menu():
             request_auth = True
             
     # Optimize: Don't load audio_file for menu listing
-    songs = Song.query.options(defer(Song.audio_file)).all()
+    songs = Song.query.options(defer(Song.audio_file), defer(Song.beat_times), defer(Song.onset_times), defer(Song.beat_map)).all()
     songs_list = [song.to_dict() for song in songs]
     return render_template('menu.html', songs=songs_list, is_admin=is_admin, request_auth=request_auth)
 
@@ -60,22 +60,40 @@ def login_admin():
 def game(video_id):
     song = Song.query.get_or_404(video_id)
     
-    # Check if audio file exists
-    file_path = os.path.join('static/songs', f"{video_id}.mp3")
-    if not os.path.exists(file_path):
-        print(f"Audio for {video_id} missing. Downloading...")
+    # Check if audio file exists in the database
+    if not song.audio_file:
+        print(f"Audio for {video_id} missing in DB. Downloading...")
         youtube_url = f"https://www.youtube.com/watch?v={video_id}"
         
-        path, _, _ = download_audio(youtube_url)
-        if not path:
+        # Assuming download_audio now returns the audio content (bytes)
+        # and potentially saves it to disk if that's still desired for caching
+        # or it could be modified to directly return bytes for DB storage.
+        # For this refactoring, we'll assume it returns bytes.
+        audio_content = download_audio_to_bytes(youtube_url) # Renamed to clarify
+        
+        if not audio_content:
              return "Error: Could not recover audio file", 500
+        
+        song.audio_file = audio_content
+        db.session.commit()
              
     # Practice Mode Params
     practice_mode = request.args.get('practice') == 'true'
     speed = float(request.args.get('speed', 1.0))
     start_time = float(request.args.get('start', 0.0))
 
+    # The template will now need an endpoint to serve the audio from the DB
+    # or the audio_file itself (if small enough and handled by to_dict)
+    # For large files, an endpoint is better.
+    # Assuming song.to_dict() is updated to provide an audio_url pointing to /audio/<video_id>
     return render_template('game.html', song_data=song.to_dict(), practice_mode=practice_mode, speed=speed, start_time=start_time)
+
+@app.route('/audio/<video_id>')
+def serve_audio(video_id):
+    song = Song.query.get_or_404(video_id)
+    if song.audio_file:
+        return Response(song.audio_file, mimetype="audio/mpeg")
+    return "Audio not found", 404
 
 @app.route('/delete_song/<video_id>', methods=['DELETE'])
 def delete_song(video_id):
