@@ -12,7 +12,7 @@ class Game {
             window.GAME_CONFIG = { practice: false, speed: 1.0, startTime: 0.0 };
         }
 
-
+        this.hit_timings = [];
 
         this.audio = new Audio();
         this.isPlaying = false;
@@ -382,10 +382,10 @@ class Game {
             const lastNoteSec = this.lastNoteTime / 1000;
             const timeSinceLastNote = syncTime - this.lastNoteTime;
 
-            // If song ends more than 5s after last note
-            if ((this.audio.duration - lastNoteSec) > 5.0) {
-                // Buffer of 2 seconds after last note
-                if (timeSinceLastNote > 2000) {
+            // If song ends more than 10s after last note
+            if ((this.audio.duration - lastNoteSec) > 10.0) {
+                // Buffer of 3 seconds after last note
+                if (timeSinceLastNote > 3000) {
                     this.fadeOutAndEnd();
                 }
             }
@@ -445,6 +445,7 @@ class Game {
         const targetNote = sortedNotes[0];
         const rawSyncTime = this.audio.currentTime * 1000;
         const syncTime = rawSyncTime - this.calibrationOffset;
+        this.hit_timings.push(syncTime / 1000);
         const rawDiff = rawSyncTime - targetNote.time;
         const diff = Math.abs(targetNote.time - syncTime);
 
@@ -629,6 +630,9 @@ class Game {
     }
 
     endGame(failed = false) {
+        // print hit timings to copy for python
+        console.log(this.hit_timings);
+
         this.isPlaying = false;
 
         if (failed) {
@@ -708,9 +712,14 @@ class Game {
 
         // Update if score is higher OR grade is better
         if (score > currentBest || newGradeIndex > currentGradeIndex) {
+            let version = 1;
+            if (typeof SONG_DATA !== 'undefined' && SONG_DATA) {
+                version = SONG_DATA.version;
+            }
             scores[videoId] = {
                 score: Math.max(Math.floor(score), currentBest),
-                grade: newGradeIndex > currentGradeIndex ? grade : currentGrade
+                grade: newGradeIndex > currentGradeIndex ? grade : currentGrade,
+                version: version
             };
             localStorage.setItem(storageKey, JSON.stringify(scores));
         }

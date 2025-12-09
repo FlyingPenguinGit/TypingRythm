@@ -139,10 +139,8 @@ def generate_beat_map(analysis_data, lyrics_text=None, monotone_factor=0.5, case
 
     # 3. Mechanical Modifiers
     if case_sensitive:
-        score *= 1.3 # 30% harder
+        score *= 1.5 # 50% harder
     
-    if include_spaces:
-        score *= 1.1 # 10% harder
 
     # Mapping to 1-5 scale (adjusted thresholds)
     if score < 1.5: difficulty = 1
@@ -157,25 +155,3 @@ def generate_beat_map(analysis_data, lyrics_text=None, monotone_factor=0.5, case
         'case_sensitive': case_sensitive,
         'include_spaces': include_spaces
     }, difficulty
-
-def generate_zen_text(word_count=50):
-    """
-    Generates a string of random words.
-    """
-    words = [
-        "time", "year", "people", "way", "day", "man", "thing", "woman", "life", "child", "world", "school", 
-        "state", "family", "student", "group", "country", "problem", "hand", "part", "place", "case", "week", 
-        "company", "system", "program", "question", "work", "government", "number", "night", "point", "home", 
-        "water", "room", "mother", "area", "money", "story", "fact", "month", "lot", "right", "study", "book", 
-        "eye", "job", "word", "business", "issue", "side", "kind", "head", "house", "service", "friend", 
-        "father", "power", "hour", "game", "line", "end", "member", "law", "car", "city", "community", "name", 
-        "president", "team", "minute", "idea", "kid", "body", "information", "back", "parent", "face", "others", 
-        "level", "office", "door", "health", "person", "art", "war", "history", "party", "result", "change", 
-        "morning", "reason", "research", "girl", "guy", "moment", "air", "teacher", "force", "education"
-    ]
-    
-    selected_words = []
-    for _ in range(word_count):
-        selected_words.append(random.choice(words))
-        
-    return " ".join(selected_words)

@@ -3,7 +3,7 @@ import json
 from flask import Flask, render_template, request, jsonify, session, Response
 from flask_socketio import SocketIO
 from audio_engine import download_audio, analyze_audio
-from game_engine import generate_beat_map, generate_zen_text
+from game_engine import generate_beat_map
 from lyrics_engine import get_lyrics, save_lyrics
 from models import db, Song
 from sqlalchemy.orm import defer
@@ -16,9 +16,9 @@ app.config['SECRET_KEY'] = 'secret!'
 ADMIN_PASSWORD = "AdminPassword"
 
 # Database Configuration
-NEON_DB_URL = "postgresql://neondb_owner:npg_VeCxmEHWdo74@ep-polished-sound-agenwmn6-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require"
+SUPABASE_DB_URL = "postgresql://postgres:1TWESCSkjOFI978e@db.xyxqrcypdzbolgfvcfjq.supabase.co:5432/postgres"
 
-db_url = os.environ.get('DATABASE_URL') or NEON_DB_URL
+db_url = os.environ.get('DATABASE_URL') or SUPABASE_DB_URL
 
 if db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)

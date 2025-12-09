@@ -22,7 +22,7 @@ A browser-based rhythm game where you type to the beat of your favorite songs.
     ```
 
 3.  **Play**:
-    Open your browser and navigate to `http://localhost:5000`.
+    Open your browser and navigate to `http://localhost:8000`.
 
 ## Project Structure
 - `app.py`: Main Flask application.
