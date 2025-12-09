@@ -39,6 +39,15 @@ body.theme-matrix {
     --lane-border: rgba(0, 255, 0, 0.2);
 }
 
+/* Cool Theme */
+body.theme-cool {
+    --bg-color: #111111;
+    --primary-glow: #9d00ab;
+    --secondary-glow: #0095ff;
+    --note-color: #ffffff;
+    --lane-border: rgb(0 0 0 / 51%);
+}
+
 /* Fonts */
 body.font-outfit {
     --font-main: 'Outfit', sans-serif;
@@ -54,6 +63,18 @@ body.font-pixel {
 
 body.font-comic {
     --font-main: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+}
+
+body.font-arial {
+    --font-main: 'Arial', sans-serif;
+}
+
+body.font-courier {
+    --font-main: 'Courier New', monospace;
+}
+
+body.font-times {
+    --font-main: 'Times New Roman', serif;
 }
 
 * {

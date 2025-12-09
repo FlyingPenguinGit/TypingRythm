@@ -445,9 +445,12 @@ class Game {
         const targetNote = sortedNotes[0];
         const rawSyncTime = this.audio.currentTime * 1000;
         const syncTime = rawSyncTime - this.calibrationOffset;
-        this.hit_timings.push(syncTime / 1000);
         const rawDiff = rawSyncTime - targetNote.time;
         const diff = Math.abs(targetNote.time - syncTime);
+
+        if (typeof GAME_CONFIG !== 'undefined' && GAME_CONFIG.practice) {
+            this.hit_timings.push(syncTime / 1000);
+        }
 
         if (diff <= this.hitWindow) {
             let inputChar = key;
@@ -631,7 +634,9 @@ class Game {
 
     endGame(failed = false) {
         // print hit timings to copy for python
-        console.log(this.hit_timings);
+        if (typeof GAME_CONFIG !== 'undefined' && GAME_CONFIG.practice) {
+            console.log(JSON.stringify(this.hit_timings));
+        }
 
         this.isPlaying = false;
 
