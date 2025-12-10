@@ -1580,8 +1580,7 @@ button:hover {
     transition: height 0.08s ease-out;
 
     /* glow like the screenshot */
-    box-shadow:
-        0 0 6px var(--primary-glow)CC;
+    box-shadow: 0 0 11px 0px var(--primary-glow);
 
     /* slight curve like in the picture */
     transform-origin: bottom center;

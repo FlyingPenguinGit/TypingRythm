@@ -16,14 +16,16 @@
 <body>
     <div class="app-container">
         <div id="menu-screen" class="screen active">
-            <h1 class="game-title">Typing Rhythm</h1>
+            <div id="menu-header">
+                <h1 class="game-title">Typing Rhythm</h1>
 
-            <!-- Tabs Navigation -->
-            <div class="tabs-container">
-                <button class="tab-btn active" data-tab="normal">Normal Mode</button>
-                <button class="tab-btn" data-tab="zen" style="display: none;">Zen Mode</button>
-                <button class="tab-btn" data-tab="process">Processing</button>
-                <button class="tab-btn" data-tab="settings">Settings</button>
+                <!-- Tabs Navigation -->
+                <div class="tabs-container">
+                    <button class="tab-btn active" data-tab="normal">Normal Mode</button>
+                    <button class="tab-btn" data-tab="zen" style="display: none;">Zen Mode</button>
+                    <button class="tab-btn" data-tab="process">Processing</button>
+                    <button class="tab-btn" data-tab="settings">Settings</button>
+                </div>
             </div>
 
             <div id="tab-content-container" style="width: 100%; min-height: 55%;">
@@ -630,7 +632,10 @@
         const normalSortSelect = document.getElementById('normal-sort');
         const normalSortDirBtn = document.getElementById('normal-sort-dir');
         const normalSongList = document.getElementById('normal-song-list');
+        const normalSearchIcon = document.querySelector('#tab-normal .search-icon');
+
         let normalSortAsc = true;
+        let normalExpanded = false;
 
         function filterAndSortNormal() {
             if (!normalSearchInput || !normalSongList) return;
@@ -658,6 +663,11 @@
             });
 
             cards.forEach(card => normalSongList.appendChild(card));
+
+            // store search term, sort key and sort direction
+            localStorage.setItem('normal-search', query);
+            localStorage.setItem('normal-sort', sortKey);
+            localStorage.setItem('normal-sort-dir', normalSortAsc);
         }
 
         if (normalSearchInput && normalSortSelect && normalSortDirBtn) {
@@ -671,9 +681,6 @@
             });
 
             // Expandable Search
-            const normalSearchIcon = document.querySelector('#tab-normal .search-icon');
-            let normalExpanded = false;
-
             if (normalSearchIcon) {
                 normalSearchIcon.addEventListener('click', () => {
                     normalExpanded = !normalExpanded;
@@ -702,6 +709,32 @@
                 }
             });
         }
+
+        // load search term, sort key and sort direction
+        const normalSearch = localStorage.getItem('normal-search');
+        const normalSort = localStorage.getItem('normal-sort');
+        const normalSortDir = localStorage.getItem('normal-sort-dir');
+
+        if (normalSearch) {
+            normalSearchInput.value = normalSearch;
+            normalSearchIcon.click();
+            normalExpanded = true;
+        }
+        if (normalSort) normalSortSelect.value = normalSort;
+        if (normalSortDir) normalSortAsc = normalSortDir === 'true';
+
+        normalSortDirBtn.querySelector('span').innerText = normalSortAsc ? 'arrow_downward' : 'arrow_upward';
+
+        filterAndSortNormal();
+
+        // open search when f is pressed
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'f' && !normalExpanded) {
+                normalSearchIcon.click();
+                normalExpanded = true;
+                event.preventDefault();
+            }
+        });
 
         // Search and Sort Logic - Zen Mode
         const zenSearchInput = document.getElementById('zen-search');
