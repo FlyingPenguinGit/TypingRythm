@@ -94,6 +94,7 @@
                                         <option value="title">Title</option>
                                         <option value="bpm">BPM</option>
                                         <option value="difficulty">Difficulty</option>
+                                        <option value="date">Date</option>
                                     </select>
                                     <button id="normal-sort-dir" class="sort-dir">
                                         <span class="material-symbols-outlined"
@@ -107,7 +108,7 @@
                             {% for song in songs %}
                             <a href="/game/{{ song.id }}" class="song-card" data-title="{{ song.title | lower }}"
                                 data-bpm="{{ song.bpm }}" data-difficulty="{{ song.difficulty }}"
-                                data-version="{{ song.version }}">
+                                data-version="{{ song.version }}" data-date="{{ song.date_added }}">
                                 <div class="thumbnail-container" style="position: relative; overflow: clip;">
                                     <img src="{{ song.thumbnail }}" alt="Thumbnail">
                                     <button class="practice-btn" data-id="{{ song.id }}"
@@ -120,6 +121,9 @@
                                     </button>
                                     <button class="admin-btn regen-btn" data-id="{{ song.id }}">
                                         <span class="material-symbols-outlined">refresh</span>
+                                    </button>
+                                    <button class="admin-btn edit-btn" data-id="{{ song.id }}">
+                                        <span class="material-symbols-outlined">edit</span>
                                     </button>
                                     {% endif %}
                                 </div>
@@ -177,6 +181,7 @@
                                         <option value="title">Title</option>
                                         <option value="bpm">BPM</option>
                                         <option value="difficulty">Difficulty</option>
+                                        <option value="date">Date</option>
                                     </select>
                                     <button id="zen-sort-dir" class="sort-dir">
                                         <span class="material-symbols-outlined"
@@ -191,7 +196,7 @@
                             <a href="/zen_game/{{ song.id }}" class="song-card zen-card"
                                 data-title="{{ song.title | lower }}" data-bpm="{{ song.bpm }}"
                                 data-difficulty="{{ song.difficulty }}" data-version="{{ song.version }}"
-                                data-song-id="{{ song.id }}">
+                                data-song-id="{{ song.id }}" data-date="{{ song.date_added }}">
                                 <div class="thumbnail-container" style="position: relative; overflow: clip;">
                                     <img src="{{ song.thumbnail }}" alt="Thumbnail">
                                     {% if is_admin %}
@@ -544,6 +549,16 @@
             });
         });
 
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const id = btn.dataset.id;
+                window.location.href = `/editor/${id}`;
+            });
+        });
+
         // Load Scores from LocalStorage
         document.addEventListener('DOMContentLoaded', () => {
             // Normal Mode Scores
@@ -655,6 +670,13 @@
                     if (valA < valB) return normalSortAsc ? -1 : 1;
                     if (valA > valB) return normalSortAsc ? 1 : -1;
                     return 0;
+                } else if (sortKey === 'date') {
+                    const valA = a.dataset.date || '';
+                    const valB = b.dataset.date || '';
+                    // standard string comparison works for ISO dates
+                    if (valA < valB) return normalSortAsc ? -1 : 1;
+                    if (valA > valB) return normalSortAsc ? 1 : -1;
+                    return 0;
                 } else {
                     const valA = parseFloat(a.dataset[sortKey]) || 0;
                     const valB = parseFloat(b.dataset[sortKey]) || 0;
@@ -758,6 +780,13 @@
                 if (sortKey === 'title') {
                     const valA = a.dataset.title || '';
                     const valB = b.dataset.title || '';
+                    if (valA < valB) return zenSortAsc ? -1 : 1;
+                    if (valA > valB) return zenSortAsc ? 1 : -1;
+                    return 0;
+                } else if (sortKey === 'date') {
+                    const valA = a.dataset.date || '';
+                    const valB = b.dataset.date || '';
+                    // standard string comparison works for ISO dates
                     if (valA < valB) return zenSortAsc ? -1 : 1;
                     if (valA > valB) return zenSortAsc ? 1 : -1;
                     return 0;

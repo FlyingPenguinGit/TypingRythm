@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beatmap Editor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&family=Roboto+Mono:wght@400&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <style>
+        body {
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            background: #111;
+            color: white;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        #controls {
+            display: flex;
+            gap: 15px;
+            padding: 15px 20px;
+            align-items: center;
+            background: rgba(30, 30, 30, 0.9);
+            border-bottom: 1px solid #333;
+        }
+
+        .control-btn {
+            background: var(--primary-glow, #0ff);
+            color: black;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            transform: scale(1.05);
+            filter: brightness(1.2);
+        }
+
+        .control-btn.secondary {
+            background: #444;
+            color: white;
+        }
+
+        .info-panel {
+            color: #ccc;
+            font-family: 'Roboto Mono', monospace;
+            margin-left: auto;
+            font-size: 1.1em;
+        }
+
+        #editor-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            position: relative;
+        }
+
+        #timeline-wrapper {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            background: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        #timeline-canvas {
+            display: block;
+            height: 100%;
+            overflow-x: scroll;
+        }
+
+        #playhead {
+            position: absolute;
+            top: 0;
+            left: 0;
+            /* Updated by JS */
+            width: 2px;
+            height: 100%;
+            background: #ff0055;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            font-size: 0.9em;
+            color: #888;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="controls">
+        <a href="/" class="control-btn secondary">
+            <span class="material-symbols-outlined">arrow_back</span> Exit
+        </a>
+        <h3 style="margin: 0 15px;">{{ song_data.title }}</h3>
+
+        <button id="play-btn" class="control-btn"><span class="material-symbols-outlined">play_arrow</span>
+            Play</button>
+        <button id="record-btn" class="control-btn" style="background: #ffab00; color: black;"><span
+                class="material-symbols-outlined">fiber_manual_record</span> Record</button>
+        <button id="save-btn" class="control-btn" style="background: #00ff88;"><span
+                class="material-symbols-outlined">save</span> Save & Apply</button>
+
+        <div class="info-panel" id="time-display">0:00 / 0:00</div>
+    </div>
+
+    <div id="editor-container">
+
+        <div id="timeline-wrapper" style="height: 300px;">
+            <canvas id="timeline-canvas"></canvas>
+            <div id="playhead"></div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="dot" style="background: rgba(0, 136, 255, 0.4);"></div> Suggested Beats (Ghost)
+            </div>
+            <div class="legend-item">
+                <div class="dot" style="background: rgba(255, 170, 0, 0.4);"></div> Suggested Onsets (Ghost)
+            </div>
+            <div class="legend-item">
+                <div class="dot" style="background: #00ff88; box-shadow: 0 0 5px #00ff88;"></div> Active
+            </div>
+            <div class="legend-item"><span class="material-symbols-outlined" style="font-size: 16px;">mouse</span> Click
+                Ghost to Add | Click Active to Remove</div>
+            <div class="legend-item"><span class="material-symbols-outlined" style="font-size: 16px;">mouse</span>
+                Double-click to Add Custom</div>
+        </div>
+    </div>
+
+    <script>
+        const songData = {{ song_data | tojson }};
+    </script>
+    <script src="{{ url_for('static', filename='js/editor.js') }}"></script>
+</body>
+
+</html>

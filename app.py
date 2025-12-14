@@ -1,13 +1,15 @@
 import os
 import json
+import tempfile
 from flask import Flask, render_template, request, jsonify, session, Response
 from flask_socketio import SocketIO
 from audio_engine import download_audio, analyze_audio
-from game_engine import generate_beat_map
+from game_engine import generate_beat_map, map_lyrics_to_beats, calculate_difficulty
 from lyrics_engine import get_lyrics, save_lyrics
 from models import db, Song
 from sqlalchemy.orm import defer
 from functools import lru_cache
+from datetime import datetime
 
 print("App is starting...")
 
@@ -102,6 +104,69 @@ def zen_game(video_id):
         del song_data['beat_map']
     
     return render_template('zen_game.html', song_data=song_data)
+
+@app.route('/editor/<video_id>')
+def editor(video_id):
+    song = Song.query.options(defer(Song.audio_file)).get_or_404(video_id)
+
+    # Check for missing analysis data and regenerate if needed
+    if not song.onset_times or not song.beat_times:
+        print(f"Missing analysis data for {video_id} in editor, re-analyzing...")
+        # Need to reload the song WITH audio_file since it was deferred
+        song_with_audio = Song.query.get(video_id)
+        if song_with_audio and song_with_audio.audio_file:
+             with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp:
+                tmp.write(song_with_audio.audio_file)
+                tmp_path = tmp.name
+            
+             try:
+                analysis_data = analyze_audio(tmp_path)
+                if analysis_data:
+                    song.bpm = analysis_data['bpm']
+                    song.beat_times = analysis_data['beat_times']
+                    song.onset_times = analysis_data['onset_times']
+                    song.duration = analysis_data['duration']
+                    db.session.commit()
+             finally:
+                if os.path.exists(tmp_path):
+                    os.remove(tmp_path)
+    
+    return render_template('editor.html', song_data=song.to_dict())
+
+@app.route('/save_beatmap/<video_id>', methods=['POST'])
+def save_beatmap(video_id):
+    song = Song.query.options(defer(Song.audio_file)).get_or_404(video_id)
+    data = request.json
+    timestamps = data.get('timestamps', [])
+    
+    # Sort and unique timestamps ensuring they are floats
+    timestamps = sorted(list(set([float(t) for t in timestamps])))
+    
+    # Get lyrics
+    lyrics = get_lyrics(video_id)
+    
+    case_sensitive = song.case_sensitive
+    include_spaces = song.include_spaces
+    
+    # Map lyrics
+    notes = map_lyrics_to_beats(timestamps, lyrics, case_sensitive, include_spaces)
+    
+    # Calc diff
+    difficulty = calculate_difficulty(notes, song.duration, case_sensitive)
+    
+    # Update Song
+    song.beat_map = {
+        'notes': notes,
+        'difficulty': difficulty,
+        'case_sensitive': case_sensitive,
+        'include_spaces': include_spaces
+    }
+    song.difficulty = difficulty
+    song.version = (song.version or 1) + 1
+    
+    db.session.commit()
+    
+    return jsonify({'status': 'success'})
 
 # Cache audio blobs in memory
 @lru_cache(maxsize=256)
@@ -237,6 +302,7 @@ def regenerate_beatmap(video_id):
     song.beat_map = beat_map
     song.difficulty = difficulty
     song.version = (song.version or 1) + 1  # Increment version
+    song.date_added = datetime.now()
     db.session.commit()
     
     return jsonify({'status': 'success', 'video_id': video_id})

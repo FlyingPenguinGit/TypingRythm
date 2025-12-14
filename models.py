@@ -36,6 +36,8 @@ class Song(db.Model):
             'case_sensitive': self.case_sensitive,
             'include_spaces': self.include_spaces,
             'beat_map': self.beat_map,
+            'beat_times': self.beat_times,
+            'onset_times': self.onset_times,
             'version': self.version or 1,
              # Return analysis-like structure for compatibility if needed
             'analysis': {
@@ -43,5 +45,6 @@ class Song(db.Model):
                 'duration': self.duration,
                 'beat_times': self.beat_times,
                 'onset_times': self.onset_times
-            }
+            },
+            'date_added': self.date_added.isoformat() if self.date_added else None
         }

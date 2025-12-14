@@ -4,7 +4,7 @@ import numpy as np
 def generate_beat_map(analysis_data, lyrics_text=None, monotone_factor=0.5, case_sensitive=False, include_spaces=True):
     """
     Generates a list of notes based on audio analysis and lyrics.
-    monotone_factor: 0.0 (chaotic) to 1.0 (strict beat only)
+    monotone_factor: 0.0 (chaotic/all onsets) to 1.0 (strict beat only)
     case_sensitive: Boolean, if True, keeps original case.
     include_spaces: Boolean, if True, includes space characters in the beatmap.
     Returns a tuple: (notes_list, difficulty_score)
@@ -54,9 +54,21 @@ def generate_beat_map(analysis_data, lyrics_text=None, monotone_factor=0.5, case
     start_offset = 2.0
     valid_times = [t for t in filtered_times if t > start_offset]
     
-    notes = []
-    
     # Process lyrics
+    notes = map_lyrics_to_beats(valid_times, lyrics_text, case_sensitive, include_spaces)
+            
+    # Calculate Difficulty
+    difficulty = calculate_difficulty(notes, analysis_data.get('duration', 1), case_sensitive)
+        
+    return {
+        'notes': notes,
+        'difficulty': difficulty,
+        'case_sensitive': case_sensitive,
+        'include_spaces': include_spaces
+    }, difficulty
+
+def map_lyrics_to_beats(valid_times, lyrics_text, case_sensitive=False, include_spaces=True):
+    notes = []
     if lyrics_text:
         # Remove newlines and extra spaces
         clean_text = " ".join(lyrics_text.split())
@@ -64,7 +76,6 @@ def generate_beat_map(analysis_data, lyrics_text=None, monotone_factor=0.5, case
         # Handle case sensitivity
         if not case_sensitive:
             clean_text = clean_text.upper()
-            
         
         text_index = 0
         time_index = 0
@@ -104,9 +115,9 @@ def generate_beat_map(analysis_data, lyrics_text=None, monotone_factor=0.5, case
                 'char': char if case_sensitive else char.upper(),
                 'is_space': False
             })
-            
-    # Calculate Difficulty
-    duration = analysis_data.get('duration', 1)
+    return notes
+
+def calculate_difficulty(notes, duration, case_sensitive=False):
     if duration <= 0: duration = 1
     
     # 1. Density (NPS)
@@ -136,22 +147,16 @@ def generate_beat_map(analysis_data, lyrics_text=None, monotone_factor=0.5, case
     # We cap the boost to avoid it becoming too crazy
     complexity_mult = 1.0 + (min(variance_score, 1.0) * 0.3)
     score *= complexity_mult
-
+    
     # 3. Mechanical Modifiers
     if case_sensitive:
-        score *= 1.5 # 50% harder
+        score *= 1.65 # 65% harder
     
-
     # Mapping to 1-5 scale (adjusted thresholds)
     if score < 1.5: difficulty = 1
     elif score < 2.5: difficulty = 2
     elif score < 4.0: difficulty = 3
     elif score < 6.0: difficulty = 4
     else: difficulty = 5
-        
-    return {
-        'notes': notes,
-        'difficulty': difficulty,
-        'case_sensitive': case_sensitive,
-        'include_spaces': include_spaces
-    }, difficulty
+    
+    return difficulty

@@ -429,7 +429,7 @@ class Game {
         }
 
         if (!this.isPlaying) return;
-        if (e.ctrlKey || e.altKey || e.metaKey || e.key === 'Shift') {
+        if (e.ctrlKey || e.altKey || e.metaKey || e.key.length !== 1) {
             return;
         }
 
@@ -642,10 +642,23 @@ class Game {
 
         if (failed) {
             // Tape Stop Effect
+            // Enable pitch shifting for the "slowing down record" effect
+            if (this.audio.mozPreservesPitch !== undefined) {
+                this.audio.mozPreservesPitch = false;
+            } else {
+                this.audio.preservesPitch = false;
+            }
+
+            const duration = 2000;
+            const interval = 50;
+            const minRate = 0.5;
+            const steps = duration / interval;
+            const startRate = this.audio.playbackRate;
+            const stepAmount = startRate / steps;
+
             const fadeInterval = setInterval(() => {
-                if (this.audio.playbackRate > 0.1) {
-                    // Reduce, but ensure we don't go below valid range accidentally
-                    this.audio.playbackRate = Math.max(0, this.audio.playbackRate - 0.025);
+                if (this.audio.playbackRate > minRate) {
+                    this.audio.playbackRate = Math.max(minRate, this.audio.playbackRate - stepAmount);
                     this.notesLayer.style.opacity = this.audio.playbackRate;
                 } else {
                     clearInterval(fadeInterval);
@@ -653,8 +666,15 @@ class Game {
                     this.notesLayer.style.opacity = 0;
                     this.gameOver = true;
                     this.showGameOverOverlay(true, 'F');
+
+                    // Reset pitch preservation for next time (though we reload mostly)
+                    if (this.audio.mozPreservesPitch !== undefined) {
+                        this.audio.mozPreservesPitch = true;
+                    } else {
+                        this.audio.preservesPitch = true;
+                    }
                 }
-            }, 50);
+            }, interval);
         } else {
             this.togglePause(); // Just pause normally
             this.gameOver = true;

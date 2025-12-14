@@ -169,7 +169,6 @@ button {
 }
 
 button:hover {
-    transform: scale(1.05);
     box-shadow: 0 0 15px var(--primary-glow);
 }
 
@@ -1594,6 +1593,7 @@ button:hover {
     border-radius: 0;
     transition: background-color 0.3s ease;
     z-index: 1000;
+    height: 33%;
 }
 
 .delete-btn {
@@ -1603,6 +1603,18 @@ button:hover {
 
 .delete-btn:hover {
     background-color: #cc00007a;
+    box-shadow: none;
+}
+
+
+.edit-btn {
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--secondary-glow);
+}
+
+.edit-btn:hover {
+    background-color: #00e5ff33;
     box-shadow: none;
 }
 
