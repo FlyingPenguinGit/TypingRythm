@@ -72,6 +72,22 @@
                         </div>
                     </div>
 
+                    <!-- Hit Error Visualizer -->
+                    <div class="hit-error-container" style="margin: 20px 0; width: 100%;">
+                        <div class="hit-error-label" style="font-size: 0.9em; color: #aaa; margin-bottom: 5px;">HIT TIMING DISTRIBUTION</div>
+                        <div class="hit-error-bar">
+                            <div class="center-line"></div>
+                            <div class="hit-accuracy-zone perfect-zone"></div>
+                            <div class="hit-accuracy-zone good-zone"></div>
+                            <div id="hit-markers-container"></div>
+                        </div>
+                        <div class="hit-error-legend" style="display: flex; justify-content: space-between; font-size: 0.8em; color: #666; margin-top: 5px;">
+                            <span>EARLY (-200ms)</span>
+                            <span id="avg-offset-display">Avg: 0ms</span>
+                            <span>LATE (+200ms)</span>
+                        </div>
+                    </div>
+
                     <div class="game-over-buttons">
                         <button id="retry-btn" class="game-over-btn retry-btn">
                             <span class="material-symbols-outlined icon-move-down">replay</span> RETRY

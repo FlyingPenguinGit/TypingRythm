@@ -13,6 +13,7 @@ class Game {
         }
 
         this.hit_timings = [];
+        this.hitOffsets = [];
 
         this.audio = new Audio();
         this.isPlaying = false;
@@ -461,6 +462,8 @@ class Game {
             }
 
             if (inputChar === targetNote.key) {
+                const signedDiff = syncTime - targetNote.time;
+                this.hitOffsets.push(signedDiff);
                 this.hit(targetNote, diff);
                 this.updateCalibration(rawDiff);
             } else {
@@ -789,6 +792,47 @@ class Game {
         if (retryBtn) {
             retryBtn.onclick = () => window.location.reload();
         }
+
+        // Hit Error Visualization
+        const markersContainer = document.getElementById('hit-markers-container');
+        const avgDisplay = document.getElementById('avg-offset-display');
+
+        if (markersContainer && this.hitOffsets.length > 0) {
+            markersContainer.innerHTML = ''; // Clear previous
+
+            let sum = 0;
+            this.hitOffsets.forEach(offset => {
+                sum += offset;
+                const marker = document.createElement('div');
+                marker.className = 'hit-marker ' + (offset < 0 ? 'early' : 'late');
+
+                // Map -200ms to +200ms range to 0% to 100%
+                // 0ms = 50%
+                // -200ms = 0%
+                // +200ms = 100%
+                // Percent = (offset + 200) / 400 * 100
+
+                let percent = (offset + 200) / 400 * 100;
+                percent = Math.max(0, Math.min(100, percent)); // Clamp
+
+                marker.style.left = `${percent}%`;
+                markersContainer.appendChild(marker);
+            });
+
+            const avg = sum / this.hitOffsets.length;
+            if (avgDisplay) {
+                avgDisplay.innerText = `Avg: ${avg > 0 ? '+' : ''}${Math.round(avg)}ms`;
+
+                // Add avg marker
+                const avgMarker = document.createElement('div');
+                avgMarker.className = 'avg-offset-marker';
+                let avgPercent = (avg + 200) / 400 * 100;
+                avgPercent = Math.max(0, Math.min(100, avgPercent));
+                avgMarker.style.left = `${avgPercent}%`;
+                markersContainer.appendChild(avgMarker); // Append to container, ensure CSS allows valid positioning or move parent
+            }
+        }
+
     }
 
     initVisualizer() {
