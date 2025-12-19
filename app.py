@@ -330,8 +330,8 @@ def process_song():
         return jsonify({'error': 'Download failed'}), 500
     
     # Check if we already have this song in DB
-    existing_song = Song.query.get(video_id)
-    
+    existing_song = db.session.get(Song, video_id)
+
     analysis = None
     
     # Try to use existing analysis if available
@@ -375,7 +375,7 @@ def process_song():
             pass
 
         # Check if we already have this song in DB
-        existing_song = Song.query.get(video_id)
+        existing_song = db.session.get(Song, video_id)
         if not existing_song:
             existing_song = Song(id=video_id)
             existing_song.audio_file = audio_bytes
