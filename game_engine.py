@@ -54,10 +54,8 @@ def generate_beat_map(analysis_data, lyrics_text=None, monotone_factor=0.5, case
     start_offset = 2.0
     valid_times = [t for t in filtered_times if t > start_offset]
     
-    # Process lyrics
     notes = map_lyrics_to_beats(valid_times, lyrics_text, case_sensitive, include_spaces)
             
-    # Calculate Difficulty
     difficulty = calculate_difficulty(notes, analysis_data.get('duration', 1), case_sensitive)
         
     return {
@@ -150,7 +148,7 @@ def calculate_difficulty(notes, duration, case_sensitive=False):
     
     # 3. Mechanical Modifiers
     if case_sensitive:
-        score *= 1.65 # 65% harder
+        score *= 1.6 # 60% harder
     
     # Mapping to 1-5 scale (adjusted thresholds)
     if score < 1.5: difficulty = 1
