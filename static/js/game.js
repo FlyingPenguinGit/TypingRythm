@@ -281,7 +281,12 @@ class Game {
         if (!this.isPlaying) return;
 
         const rawSyncTime = this.audio.currentTime * 1000;
-        const syncTime = rawSyncTime - this.calibrationOffset;
+        let syncTime = rawSyncTime - this.calibrationOffset;
+
+        // AC Latency Compensation for accurate visual sync
+        if (this.audioContext && this.audioContext.outputLatency) {
+            syncTime -= (this.audioContext.outputLatency * 1000);
+        }
 
         if (this.audio.duration) {
             const progress = (this.audio.currentTime / this.audio.duration) * 100;
@@ -445,7 +450,12 @@ class Game {
 
         const targetNote = sortedNotes[0];
         const rawSyncTime = this.audio.currentTime * 1000;
-        const syncTime = rawSyncTime - this.calibrationOffset;
+        let syncTime = rawSyncTime - this.calibrationOffset;
+
+        if (this.audioContext && this.audioContext.outputLatency) {
+            syncTime -= (this.audioContext.outputLatency * 1000);
+        }
+
         const rawDiff = rawSyncTime - targetNote.time;
         const diff = Math.abs(targetNote.time - syncTime);
 
