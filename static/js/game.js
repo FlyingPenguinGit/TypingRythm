@@ -201,7 +201,7 @@ class Game {
 
         const videoId = window.location.pathname.split('/').pop();
         this.audio.src = `/audio/${videoId}`;
-        this.audio.preload = 'auto'; // Force preload for better timing
+        this.audio.preload = 'auto'; // Fix: Force preload to reduce start-up info gap
         this.audio.load();
 
         let beatMapNotes = [];
@@ -262,20 +262,25 @@ class Game {
         }
     }
 
-    startPlayback() {
+    async startPlayback() {
         if (typeof GAME_CONFIG !== 'undefined') {
             this.audio.currentTime = GAME_CONFIG.startTime || 0;
             this.audio.playbackRate = GAME_CONFIG.speed || 1.0;
         }
 
-        this.audio.play().catch(e => console.error("Audio play failed:", e));
-        this.startTime = performance.now();
-        this.isPlaying = true;
+        try {
+            await this.audio.play();
+            // Only start the game loop AFTER audio has confirmed it is playing (buffering done)
+            this.startTime = performance.now();
+            this.isPlaying = true;
 
-        if (this.visualizerEnabled) {
-            this.initVisualizer();
+            if (this.visualizerEnabled) {
+                this.initVisualizer();
+            }
+            this.loop();
+        } catch (e) {
+            console.error("Audio play failed:", e);
         }
-        this.loop();
     }
 
     loop() {
@@ -284,13 +289,9 @@ class Game {
         const rawSyncTime = this.audio.currentTime * 1000;
         let syncTime = rawSyncTime - this.calibrationOffset;
 
-        // AC Latency Compensation (Refined)
-        if (this.audioContext) {
-            let totalLatency = 0;
-            if (this.audioContext.outputLatency) totalLatency += this.audioContext.outputLatency;
-            if (this.audioContext.baseLatency) totalLatency += this.audioContext.baseLatency;
-
-            if (totalLatency > 0) syncTime -= (totalLatency * 1000);
+        // AC Latency Compensation for accurate visual sync
+        if (this.audioContext && this.audioContext.outputLatency) {
+            syncTime -= (this.audioContext.outputLatency * 1000);
         }
 
         if (this.audio.duration) {
@@ -457,12 +458,8 @@ class Game {
         const rawSyncTime = this.audio.currentTime * 1000;
         let syncTime = rawSyncTime - this.calibrationOffset;
 
-        if (this.audioContext) {
-            let totalLatency = 0;
-            if (this.audioContext.outputLatency) totalLatency += this.audioContext.outputLatency;
-            if (this.audioContext.baseLatency) totalLatency += this.audioContext.baseLatency;
-
-            if (totalLatency > 0) syncTime -= (totalLatency * 1000);
+        if (this.audioContext && this.audioContext.outputLatency) {
+            syncTime -= (this.audioContext.outputLatency * 1000);
         }
 
         const rawDiff = rawSyncTime - targetNote.time;
@@ -856,8 +853,7 @@ class Game {
 
     initVisualizer() {
         if (!this.audioContext) {
-            // 'interactive' latencyHint trades some battery/CPU for lowest possible latency
-            this.audioContext = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'interactive' });
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
             const source = this.audioContext.createMediaElementSource(this.audio);
 
             this.analyser = this.audioContext.createAnalyser();
