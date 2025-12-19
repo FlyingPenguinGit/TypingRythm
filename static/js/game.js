@@ -201,6 +201,7 @@ class Game {
 
         const videoId = window.location.pathname.split('/').pop();
         this.audio.src = `/audio/${videoId}`;
+        this.audio.preload = 'auto'; // Force preload for better timing
         this.audio.load();
 
         let beatMapNotes = [];
@@ -283,9 +284,13 @@ class Game {
         const rawSyncTime = this.audio.currentTime * 1000;
         let syncTime = rawSyncTime - this.calibrationOffset;
 
-        // AC Latency Compensation for accurate visual sync
-        if (this.audioContext && this.audioContext.outputLatency) {
-            syncTime -= (this.audioContext.outputLatency * 1000);
+        // AC Latency Compensation (Refined)
+        if (this.audioContext) {
+            let totalLatency = 0;
+            if (this.audioContext.outputLatency) totalLatency += this.audioContext.outputLatency;
+            if (this.audioContext.baseLatency) totalLatency += this.audioContext.baseLatency;
+
+            if (totalLatency > 0) syncTime -= (totalLatency * 1000);
         }
 
         if (this.audio.duration) {
@@ -452,8 +457,12 @@ class Game {
         const rawSyncTime = this.audio.currentTime * 1000;
         let syncTime = rawSyncTime - this.calibrationOffset;
 
-        if (this.audioContext && this.audioContext.outputLatency) {
-            syncTime -= (this.audioContext.outputLatency * 1000);
+        if (this.audioContext) {
+            let totalLatency = 0;
+            if (this.audioContext.outputLatency) totalLatency += this.audioContext.outputLatency;
+            if (this.audioContext.baseLatency) totalLatency += this.audioContext.baseLatency;
+
+            if (totalLatency > 0) syncTime -= (totalLatency * 1000);
         }
 
         const rawDiff = rawSyncTime - targetNote.time;
@@ -847,7 +856,8 @@ class Game {
 
     initVisualizer() {
         if (!this.audioContext) {
-            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            // 'interactive' latencyHint trades some battery/CPU for lowest possible latency
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'interactive' });
             const source = this.audioContext.createMediaElementSource(this.audio);
 
             this.analyser = this.audioContext.createAnalyser();
